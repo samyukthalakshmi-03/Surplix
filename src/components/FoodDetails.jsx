@@ -44,8 +44,16 @@ const FoodDetails = ({ item, onClose, onInteract }) => {
         </div>
 
         <div className="bg-white/60 p-6 rounded-[24px] border border-theme-creamDark my-6 text-center">
-          <p className="text-theme-dark/50 line-through font-medium mb-1">₹{item.initialPrice}</p>
+          {item.currentPrice < item.initialPrice && (
+            <p className="text-theme-dark/50 line-through font-medium mb-1">₹{item.initialPrice}</p>
+          )}
           <p className="text-5xl font-extrabold text-theme-yellow price-glow">₹{item.currentPrice}</p>
+        </div>
+
+        <div className="bg-white p-4 rounded-[20px] mb-6 flex flex-col gap-2 shadow-sm border border-theme-creamDark">
+          {item.foodType && <p className="text-sm"><strong>Food Type:</strong> {item.foodType}</p>}
+          {item.preparedBefore && <p className="text-sm"><strong>Prepared Time:</strong> {item.preparedBefore}</p>}
+          {item.allergens && <p className="text-sm"><strong>Allergens:</strong> {item.allergens}</p>}
         </div>
 
         <div className="flex justify-around items-center bg-white p-4 rounded-[20px] shadow-sm mb-6">

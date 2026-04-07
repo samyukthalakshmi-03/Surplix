@@ -16,17 +16,28 @@ const Home = () => {
   const { items } = usePricing();
   const { t } = useLanguage();
   const mapRef = useRef(null);
-  
+  const mapInstanceRef = useRef(null);
+  const markersGroupRef = useRef(null);
+
   useEffect(() => {
     if (!mapRef.current) return;
     
-    // Initialize pure map instance
-    const map = L.map(mapRef.current).setView([12.9716, 77.5946], 12);
-    
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
+    // Initialize pure map instance only once
+    if (!mapInstanceRef.current) {
+      mapInstanceRef.current = L.map(mapRef.current).setView([12.9716, 77.5946], 12);
+      
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(mapInstanceRef.current);
+
+      markersGroupRef.current = L.layerGroup().addTo(mapInstanceRef.current);
+    }
+
+    // Clear old markers when items array changes (so it doesn't duplicate)
+    markersGroupRef.current.clearLayers();
+
+    const boundCoordinates = [];
 
     items.forEach(item => {
       if (item.lat && item.lng) {
@@ -35,7 +46,7 @@ const Home = () => {
           ? `<div style="background-color: #d1c8b3; color: #3d2616; padding: 6px 12px; border-radius: 999px; text-align: center; font-weight: bold; font-size: 0.9rem;">${t('sold_out')}</div>`
           : `<a href="/browse" style="display: block; background-color: #2e7d32; color: #ffffff; padding: 6px 12px; border-radius: 999px; text-decoration: none; font-weight: bold; font-size: 0.9rem; text-align: center;">🚀 ${t('claim')}</a>`;
 
-        L.marker([item.lat, item.lng]).addTo(map)
+        L.marker([item.lat, item.lng]).addTo(markersGroupRef.current)
          .bindPopup(`
            <div style="text-align: center; font-family: sans-serif; min-width: 150px; padding: 5px;">
              <h3 style="font-weight: bold; font-size: 1.1rem; color: #1f2937; margin: 0 0 5px 0;">${item.name}</h3>
@@ -44,11 +55,26 @@ const Home = () => {
              ${buttonHtml}
            </div>
          `);
+        boundCoordinates.push([item.lat, item.lng]);
       }
     });
 
+    // Auto fit map bounds if we have at least one valid coordinate
+    if (boundCoordinates.length > 0) {
+      const bounds = L.latLngBounds(boundCoordinates);
+      mapInstanceRef.current.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 });
+    } else if ("geolocation" in navigator) {
+      // Fallback to user location if empty
+      navigator.geolocation.getCurrentPosition((position) => {
+        if (mapInstanceRef.current) {
+           mapInstanceRef.current.setView([position.coords.latitude, position.coords.longitude], 12);
+        }
+      });
+    }
+
+    // Cleanup happens on unmount
     return () => {
-      map.remove(); // Critical strict mode cleanup bypass
+      // We don't remove mapInstanceRef.current here so we can reuse it during the component lifecycle
     };
   }, [items, t]);
 

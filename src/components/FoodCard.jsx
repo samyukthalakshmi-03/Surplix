@@ -38,6 +38,16 @@ const FoodCard = ({ item, onInteract, onClaim, onOpenDetails }) => {
       <div className="flex justify-between items-start mb-2 mt-4">
         <div>
           <h3 className="text-2xl font-bold text-theme-dark">{t(item.name)}</h3>
+          {item.foodType && (
+            <span className={`inline-block mt-1 text-xs font-bold px-2 py-0.5 rounded ${item.foodType === 'Veg' ? 'bg-green-100 text-green-700' : item.foodType === 'Vegan' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+              {item.foodType}
+            </span>
+          )}
+          {item.preparedBefore && (
+            <span className="inline-block mt-1 ml-2 text-xs font-medium text-theme-dark/60 bg-gray-100 px-2 py-0.5 rounded">
+              ⏱ {item.preparedBefore}
+            </span>
+          )}
           <span className="block mt-1 text-sm text-theme-dark/70">
              📍 {t(item.location)} {item.distance ? `• ${item.distance.toFixed(1)} ${t('distance_km')}` : ''} 
           </span>
@@ -45,7 +55,11 @@ const FoodCard = ({ item, onInteract, onClaim, onOpenDetails }) => {
       </div>
 
       <div className="text-center my-6 bg-white/60 py-8 rounded-[24px] border border-theme-creamDark relative overflow-hidden backdrop-blur-sm">
-        <span className="block text-theme-dark/40 line-through font-medium mb-1 tracking-wide">₹{item.initialPrice}</span>
+        {item.currentPrice < item.initialPrice && (
+          <span className="block text-theme-dark/40 line-through font-medium mb-1 tracking-wide">
+            ₹{item.initialPrice}
+          </span>
+        )}
         <div className={`text-5xl font-extrabold flex items-center justify-center gap-2 transition-all duration-500 ${isPulsing ? 'price-decrease' : 'text-theme-yellow price-glow'}`}>
           ₹{item.currentPrice}
           <span className={`text-theme-orange text-3xl transition-opacity duration-300 ${isPulsing ? 'opacity-100' : 'opacity-0'}`}>↓</span>

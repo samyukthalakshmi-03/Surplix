@@ -12,7 +12,10 @@ const ListFood = () => {
     name: '',
     location: '',
     totalServings: '',
-    initialPrice: ''
+    initialPrice: '',
+    preparedBefore: '',
+    foodType: 'Veg',
+    allergens: ''
   }
   const [formData, setFormData] = useState({ ...ObjectState });
   const [error, setError] = useState('');
@@ -33,6 +36,9 @@ const ListFood = () => {
         totalServings: parseInt(formData.totalServings),
         availableServings: parseInt(formData.totalServings),
         initialPrice: parseInt(formData.initialPrice),
+        preparedBefore: formData.preparedBefore,
+        foodType: formData.foodType,
+        allergens: formData.allergens,
         lat: lat,
         lng: lng
       });
@@ -69,6 +75,26 @@ const ListFood = () => {
             <label className="block text-sm font-bold text-theme-dark mb-2">{t('location_label')}</label>
             <input required type="text" className="w-full px-4 py-3 rounded-2xl border border-theme-creamDark focus:ring-2 focus:ring-theme-green outline-none bg-theme-cream/30" value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })} placeholder={t('location_placeholder')} />
           </div>
+          <div>
+            <label className="block text-sm font-bold text-theme-dark mb-2">Prepared Time</label>
+            <input required type="text" className="w-full px-4 py-3 rounded-2xl border border-theme-creamDark focus:ring-2 focus:ring-theme-green outline-none bg-theme-cream/30" value={formData.preparedBefore} onChange={e => setFormData({ ...formData, preparedBefore: e.target.value })} placeholder="e.g. 2 hours ago" />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-bold text-theme-dark mb-2">Food Type</label>
+              <select className="w-full px-4 py-3 rounded-2xl border border-theme-creamDark focus:ring-2 focus:ring-theme-green outline-none bg-theme-cream/30" value={formData.foodType} onChange={e => setFormData({ ...formData, foodType: e.target.value })}>
+                <option value="Veg">Veg</option>
+                <option value="Non-Veg">Non-Veg</option>
+                <option value="Vegan">Vegan</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-theme-dark mb-2">Allergens</label>
+              <input type="text" className="w-full px-4 py-3 rounded-2xl border border-theme-creamDark focus:ring-2 focus:ring-theme-green outline-none bg-theme-cream/30" value={formData.allergens} onChange={e => setFormData({ ...formData, allergens: e.target.value })} placeholder="e.g. Gluten, Lactose" />
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-bold text-theme-dark mb-2">{t('quantity_label')}</label>

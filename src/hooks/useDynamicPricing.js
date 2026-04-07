@@ -61,11 +61,21 @@ export const useDynamicPricing = () => {
     if (item.status !== 'available' || item.available_servings === 0) return item;
 
     const DROP_AMOUNT = 10;
-    const intervalMs = 10000; // 10 seconds
-    const createdAt = new Date(item.created_at).getTime();
+    let intervalMs = 10000; // 10 seconds default drop rate
+    let delayBeforeDropMs = 0;
 
+    // "when food is listed for 30 rupees it should be constant... if time taken is too long then it has to decrease"
+    if (item.initial_price === 30 || item.initial_price <= 30) {
+      delayBeforeDropMs = 3600000; // Wait 1 hour before it starts dropping
+    }
+
+    const createdAt = new Date(item.created_at).getTime();
     const timeElapsed = Date.now() - createdAt;
-    const intervalsPassed = Math.floor(timeElapsed / intervalMs);
+    
+    let intervalsPassed = 0;
+    if (timeElapsed > delayBeforeDropMs) {
+      intervalsPassed = Math.floor((timeElapsed - delayBeforeDropMs) / intervalMs);
+    }
 
     let currentPrice = item.initial_price - (intervalsPassed * DROP_AMOUNT);
 
@@ -88,7 +98,16 @@ export const useDynamicPricing = () => {
 
     // We update prices locally every 10 seconds so the UI updates
     const interval = setInterval(() => {
-      setItems(prevItems => prevItems.map(item => calculatePrice(item)));
+      setItems(prevItems => prevItems.map(item => {
+        const calculatedItem = calculatePrice(item);
+        
+        // If it naturally hit donated state via math, sync it to the DB so the trigger moves it to sold_items
+        if (calculatedItem.status === 'donated' && item.status !== 'donated') {
+           supabase.from('food_items').update({ status: 'donated' }).eq('id', item.id).then();
+        }
+        
+        return calculatedItem;
+      }));
     }, DROP_INTERVAL);
 
     return () => clearInterval(interval);
@@ -185,7 +204,10 @@ export const useDynamicPricing = () => {
       views: 0,
       interested: 0,
       status: 'available',
-      category: newItem.category || "Surplus"
+      category: newItem.category || "Surplus",
+      prepared_before: newItem.preparedBefore || '',
+      food_type: newItem.foodType || 'Veg',
+      allergens: newItem.allergens || ''
     };
 
     try {
@@ -216,7 +238,10 @@ export const useDynamicPricing = () => {
     availableServings: item.available_servings,
     initialPrice: item.initial_price,
     currentPrice: item.current_price,
-    priceFloor: item.price_floor
+    priceFloor: item.price_floor,
+    preparedBefore: item.prepared_before,
+    foodType: item.food_type,
+    allergens: item.allergens
   }));
 
   return { items: normalizedItems, handleInteract, handleClaim, addItem };
