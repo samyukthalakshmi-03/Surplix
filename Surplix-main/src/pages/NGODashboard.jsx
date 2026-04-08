@@ -2,15 +2,18 @@ import React, { useState } from 'react';
 import { usePricing } from '../context/PricingContext';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-import { Building2, MapPin, CheckCircle, Package, Clock, ShieldCheck, Heart } from 'lucide-react';
+import { Building2, MapPin, CheckCircle, Package, Clock, Heart, X, ExternalLink, Phone, Navigation, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import FoodCard from '../components/FoodCard';
 
 const NGODashboard = () => {
-    const { items, handleClaim } = usePricing();
+    const { items, handleClaim, lockItem, pickupItem, unlockItem } = usePricing();
     const { user } = useAuth();
     const { t } = useLanguage();
 
     const [autoAccept, setAutoAccept] = useState(true);
+    const [activeModalItem, setActiveModalItem] = useState(null);
+    const [isConfirming, setIsConfirming] = useState(false);
 
     if (!user || user.user_metadata?.role !== 'organization') {
         return (
@@ -26,63 +29,81 @@ const NGODashboard = () => {
 
     const orgName = user.user_metadata?.org_name || user.user_metadata?.display_name || 'Organization';
 
-    // Prioritize food that is marked 'donated' or fully dropped to floor
-    const incomingDonations = items.filter(i => i.status === 'donated');
+    // Prioritize food that is marked 'donated' or fully dropped to floor, and includes those explicitly locked by this NGO
+    const incomingDonations = items.filter(i => i.status === 'donated' || i.status === 'ngo_locked');
     const nearingDonations = items.filter(i => i.status === 'available' && i.currentPrice <= i.priceFloor + 20 && i.availableServings > 0);
 
-    const onAcceptDonation = (item) => {
-        handleClaim(item.id, item.availableServings);
-        alert(`Successfully accepted ${item.availableServings} servings of ${item.name}! A driver should be dispatched.`);
+    const onAcceptDonation = async (item) => {
+        // Lock it natively so it doesn't get swept by others
+        await lockItem(item.id);
+        setActiveModalItem({ ...item, status: 'ngo_locked' });
+    };
+
+    const handleMarkPickedUp = async () => {
+        if (!activeModalItem) return;
+        setIsConfirming(true);
+        await pickupItem(activeModalItem.id);
+        alert("Pickup confirmed.");
+        setActiveModalItem(null);
+        setIsConfirming(false);
+    };
+
+    const handleCancelRequest = async () => {
+        if (!activeModalItem) return;
+        // Determine whether to return to available or donated based on price
+        const originalStatus = activeModalItem.currentPrice <= activeModalItem.priceFloor ? 'donated' : 'available';
+        await unlockItem(activeModalItem.id, originalStatus);
+        setActiveModalItem(null);
     };
 
     return (
         <div className="pt-24 max-w-7xl mx-auto px-4 pb-12 min-h-screen bg-theme-cream font-sans">
-            <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4 border-b border-theme-creamDark pb-6">
                 <div>
-                    <h1 className="text-4xl font-extrabold text-theme-dark mb-2 tracking-tight flex items-center gap-3">
-                        <Building2 className="w-10 h-10 text-theme-green" /> 
+                    <h1 className="text-2xl font-extrabold text-theme-dark mb-1 tracking-tight flex items-center gap-2">
+                        <Building2 className="w-6 h-6 text-theme-green" />
                         {orgName} Dashboard
                     </h1>
-                    <p className="text-theme-dark/70 text-lg font-medium">Manage incoming surplus food donations and distribute meals effectively.</p>
+                    <p className="text-theme-dark/70 text-sm font-medium">Manage incoming donations and distribute meals.</p>
                 </div>
-                
-                <div className="flex items-center gap-3 bg-white p-2 md:pr-4 rounded-full border border-gray-200 shadow-sm">
-                    <button 
+
+                <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-theme-creamDark shadow-sm">
+                    <button
                         onClick={() => setAutoAccept(!autoAccept)}
-                        className={`w-12 h-6 rounded-full p-1 transition-colors relative ${autoAccept ? 'bg-theme-green' : 'bg-gray-300'}`}
+                        className={`w-10 h-5 rounded-full p-1 transition-colors relative ${autoAccept ? 'bg-theme-green' : 'bg-theme-creamDark'}`}
                     >
-                        <div className={`w-4 h-4 rounded-full bg-white transition-transform ${autoAccept ? 'translate-x-6' : 'translate-x-0'}`}></div>
+                        <div className={`w-3 h-3 rounded-full bg-white transition-transform ${autoAccept ? 'translate-x-5' : 'translate-x-0'}`}></div>
                     </button>
-                    <span className="font-bold text-sm text-gray-700">Auto-Accept Donations</span>
+                    <span className="font-bold text-xs text-theme-dark">Auto-Accept</span>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-center gap-4">
-                    <div className="bg-theme-mint/20 p-4 rounded-2xl text-theme-mint">
-                        <Heart className="w-8 h-8" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <div className="bg-white p-4 rounded-2xl border border-theme-creamDark shadow-sm flex items-center gap-3 hover:-translate-y-1 transition-transform">
+                    <div className="bg-theme-mint/20 p-2 rounded-xl text-theme-mint">
+                        <Heart className="w-6 h-6" />
                     </div>
                     <div>
-                        <div className="text-sm font-bold text-gray-500">Meals Distributed</div>
-                        <div className="text-3xl font-black text-theme-dark">1,240 pt</div>
+                        <div className="text-xs font-bold text-theme-dark/60 tracking-wider uppercase">Meals Distributed</div>
+                        <div className="text-xl font-black text-theme-dark">1,240 pt</div>
                     </div>
                 </div>
-                <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-center gap-4">
-                    <div className="bg-green-50 p-4 rounded-2xl text-theme-green">
-                        <CheckCircle className="w-8 h-8" />
+                <div className="bg-white p-4 rounded-2xl border border-theme-creamDark shadow-sm flex items-center gap-3 hover:-translate-y-1 transition-transform">
+                    <div className="bg-theme-green/20 p-2 rounded-xl text-theme-green">
+                        <CheckCircle className="w-6 h-6" />
                     </div>
                     <div>
-                        <div className="text-sm font-bold text-gray-500">Active Pickups</div>
-                        <div className="text-3xl font-black text-theme-dark">{incomingDonations.length}</div>
+                        <div className="text-xs font-bold text-theme-dark/60 tracking-wider uppercase">Active Pickups</div>
+                        <div className="text-xl font-black text-theme-dark">{incomingDonations.length}</div>
                     </div>
                 </div>
-                <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-center gap-4">
-                    <div className="bg-orange-50 p-4 rounded-2xl text-orange-500">
-                        <Clock className="w-8 h-8" />
+                <div className="bg-white p-4 rounded-2xl border border-theme-creamDark shadow-sm flex items-center gap-3 hover:-translate-y-1 transition-transform">
+                    <div className="bg-theme-orange/20 p-2 rounded-xl text-theme-orange">
+                        <Clock className="w-6 h-6" />
                     </div>
                     <div>
-                        <div className="text-sm font-bold text-gray-500">Pending Approvals</div>
-                        <div className="text-3xl font-black text-theme-dark">{nearingDonations.length}</div>
+                        <div className="text-xs font-bold text-theme-dark/60 tracking-wider uppercase">Pending Approvals</div>
+                        <div className="text-xl font-black text-theme-dark">{nearingDonations.length}</div>
                     </div>
                 </div>
             </div>
@@ -92,91 +113,162 @@ const NGODashboard = () => {
                 <div>
                     <h2 className="text-2xl font-bold text-theme-dark mb-4 border-b-2 border-theme-green pb-2 inline-block">🚀 Priority Overstock (Ready for Pickup)</h2>
                     {incomingDonations.length === 0 ? (
-                        <div className="bg-white p-8 rounded-[32px] text-center border border-gray-100 text-gray-500 font-medium">
+                        <div className="bg-theme-cream/40 p-8 rounded-[32px] text-center border border-theme-creamDark text-theme-dark/60 font-bold">
                             No immediate donations available waiting for pickup right now.
                         </div>
                     ) : (
-                        <div className="space-y-6">
-                            {incomingDonations.map(item => (
-                                <div key={item.id} className="bg-white border border-theme-creamDark p-6 rounded-[32px] shadow-sm transition-all hover:shadow-md hover:border-theme-green/50">
-                                    <div className="flex flex-col lg:flex-row justify-between gap-6">
-                                        <div className="flex-1">
-                                            <h3 className="text-2xl font-bold text-theme-dark mb-2">{item.name}</h3>
-                                            <p className="text-sm text-theme-dark/60 font-medium mb-5 flex items-center gap-1"><MapPin className="w-4 h-4"/> {item.location}</p>
-                                            
-                                            <div className="flex gap-6 mb-2">
-                                                <div>
-                                                    <div className="text-xs text-theme-green font-bold uppercase tracking-wider mb-1">Available Servings</div>
-                                                    <div className="text-2xl font-black text-theme-green">{item.availableServings}</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <div className="lg:w-1/3 bg-gray-50/50 rounded-2xl p-5 border border-gray-100 flex flex-col justify-center">
-                                            <button 
-                                                onClick={() => onAcceptDonation(item)}
-                                                className="w-full bg-theme-green text-white font-bold py-4 rounded-2xl hover:bg-green-800 transition shadow-lg shadow-theme-green/20"
-                                            >
-                                                Accept & Arrange Pickup
-                                            </button>
-                                        </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {incomingDonations.map(item => (
+                            <FoodCard 
+                                key={item.id} 
+                                item={item} 
+                                customActions={
+                                    <div className="space-y-2 mt-4">
+                                        <button
+                                            onClick={() => onAcceptDonation(item)}
+                                            className="w-full bg-theme-green text-white font-bold py-3.5 rounded-[20px] transition-all hover:-translate-y-1 hover:shadow-lg flex items-center justify-center gap-2"
+                                        >
+                                            <Package className="w-5 h-5" /> Accept & Pickup
+                                        </button>
+                                        <p className="text-xs text-theme-dark/60 text-center font-bold">Driver will be matched.</p>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-
-                {/* 2. Upcoming Donations */}
-                <div>
-                    <h2 className="text-2xl font-bold text-theme-dark mb-4 border-b-2 border-orange-400 pb-2 inline-block">⏳ Approaching Surplus</h2>
-                    <p className="text-gray-500 font-medium mb-4">These items are nearing their expiry or their price drop limit is extremely low. You get priority access.</p>
-                    
-                    {nearingDonations.length === 0 ? (
-                        <div className="bg-white p-8 rounded-[32px] text-center border border-gray-100 text-gray-500 font-medium">
-                            No approaching surplus currently in your vicinity.
-                        </div>
-                    ) : (
-                        <div className="space-y-6">
-                            {nearingDonations.map(item => (
-                                <div key={item.id} className="bg-white border-2 border-orange-100 p-6 rounded-[32px] shadow-sm transition-all hover:border-orange-300">
-                                    <div className="flex flex-col lg:flex-row justify-between gap-6">
-                                        <div className="flex-1">
-                                            <h3 className="text-xl font-bold text-gray-900 mb-2">{item.name}</h3>
-                                            <div className="flex justify-between items-center mb-5">
-                                                 <p className="text-sm text-gray-500 flex items-center gap-1"><MapPin className="w-4 h-4"/> {item.location}</p>
-                                            </div>
-                                            
-                                            <div className="flex gap-6 mb-2">
-                                                <div>
-                                                    <div className="text-xs text-gray-400 uppercase tracking-widest mb-1 font-bold">Qty Available</div>
-                                                    <div className="text-2xl font-black text-gray-800">{item.availableServings}</div>
-                                                </div>
-                                                <div>
-                                                    <div className="text-xs text-orange-400 uppercase tracking-widest mb-1 font-bold">Current Price</div>
-                                                    <div className="text-2xl font-black text-orange-600">₹{item.currentPrice}</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <div className="lg:w-1/3 bg-orange-50/50 rounded-2xl p-5 border border-orange-100 flex flex-col justify-center">
-                                            <button 
-                                                onClick={() => {
-                                                    alert("You have claimed this approaching surplus! This ensures members can no longer buy it.");
-                                                    handleClaim(item.id, item.availableServings);
-                                                }}
-                                                className="w-full bg-white border-2 border-orange-300 text-orange-600 font-bold py-3.5 rounded-2xl hover:bg-orange-50 transition shadow-sm"
-                                            >
-                                                Pre-Claim Donation
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
+                                }
+                            />
+                        ))}
+                    </div>
+                )}
             </div>
+
+            {/* 2. Upcoming Donations */}
+            <div>
+                <h2 className="text-2xl font-bold text-theme-dark mb-4 border-b-2 border-theme-orange pb-2 inline-block">⏳ Approaching Surplus</h2>
+                <p className="text-theme-dark/60 font-bold mb-4">These items are nearing their expiry or their price drop limit is extremely low. You get priority access.</p>
+
+                {nearingDonations.length === 0 ? (
+                    <div className="bg-theme-cream/40 p-8 rounded-[32px] text-center border border-theme-creamDark text-theme-dark/60 font-bold">
+                        No approaching surplus currently in your vicinity.
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {nearingDonations.map(item => (
+                            <FoodCard 
+                                key={item.id} 
+                                item={{...item, status: 'available'}} 
+                                customActions={
+                                    <div className="space-y-2 mt-4">
+                                        <button
+                                            onClick={() => {
+                                                alert("You have claimed this approaching surplus! This ensures members can no longer buy it.");
+                                                handleClaim(item.id, item.availableServings);
+                                            }}
+                                            className="w-full bg-orange-50 border-2 border-theme-orange text-theme-orange font-bold py-3.5 rounded-[20px] transition-all hover:bg-orange-100 flex items-center justify-center gap-2"
+                                        >
+                                            <Clock className="w-5 h-5" /> Pre-Claim Donation
+                                        </button>
+                                        <p className="text-xs text-theme-orange/70 text-center font-bold">Prevent going to zero</p>
+                                    </div>
+                                }
+                            />
+                        ))}
+                    </div>
+                )}
+            </div>
+            </div>
+
+            {activeModalItem && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-theme-dark/60 backdrop-blur-sm shadow-2xl transition-opacity">
+                    <div className="bg-white max-w-[500px] w-[90%] mx-auto rounded-[16px] max-h-[80vh] overflow-y-auto border border-theme-creamDark flex flex-col">
+                        <div className="bg-theme-cream/50 border-b border-theme-creamDark p-5 flex justify-between items-center sticky top-0 z-10">
+                            <h2 className="text-xl font-extrabold text-theme-dark flex items-center gap-2">
+                                <Package className="w-5 h-5 text-theme-green" />
+                                Pickup Details
+                            </h2>
+                            <button onClick={handleCancelRequest} disabled={isConfirming} className="p-1.5 bg-white rounded-full border border-theme-creamDark hover:bg-gray-100 transition-colors disabled:opacity-50">
+                                <X className="w-5 h-5 text-gray-500" />
+                            </button>
+                        </div>
+
+                        <div className="p-5 space-y-5">
+                            {/* Status Warning */}
+                            <div className="bg-amber-50 border border-amber-200 p-3 rounded-xl flex gap-3 text-amber-800 shadow-sm">
+                                <Info className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                                <div>
+                                    <p className="font-bold text-sm">Item Locked for You.</p>
+                                    <p className="text-xs font-medium mt-0.5">Please collect within 30 minutes. This item has been removed from the public pool.</p>
+                                </div>
+                            </div>
+
+                            {/* Details */}
+                            <div className="space-y-4">
+                                <div>
+                                    <div className="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-1">📦 Food Name</div>
+                                    <div className="text-lg font-bold text-theme-dark">{activeModalItem.name}</div>
+                                </div>
+
+                                <div className="flex flex-col sm:flex-row gap-4">
+                                    <div className="flex-1">
+                                        <div className="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-1">👤 Seller</div>
+                                        <div className="text-sm font-bold text-theme-dark flex items-center gap-2">
+                                            Community Member
+                                        </div>
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-1">📞 Contact</div>
+                                        <div className="text-sm font-bold text-theme-dark flex items-center gap-2">
+                                            <Phone className="w-3.5 h-3.5 text-theme-green" />
+                                            +91 9876543210
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div className="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-1">🕒 Listed / Prep Time</div>
+                                    <div className="text-sm font-medium text-theme-dark">{activeModalItem.preparedBefore || 'Prepared Today'}</div>
+                                </div>
+
+                                <div className="bg-theme-cream/30 p-3 rounded-lg border border-dashed border-theme-creamDark">
+                                    <div className="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-1">📊 Quantity & Instructions</div>
+                                    <div className="font-bold text-theme-green text-base mb-1.5">{activeModalItem.availableServings} Total Servings ({Math.floor(activeModalItem.availableServings * 1.5)} people depending on portions)</div>
+                                    <p className="text-[12px] font-medium text-gray-600 mb-0.5">• Bring containers to collect the food.</p>
+                                    <p className="text-[12px] font-medium text-gray-600">• Call the seller 5 minutes before arrival.</p>
+                                </div>
+
+                                <div>
+                                    <div className="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-1">📍 Exact Location</div>
+                                    <div className="text-sm font-bold text-theme-dark mb-2">{activeModalItem.location}</div>
+                                    <a
+                                        href={`https://www.google.com/maps/search/?api=1&query=${activeModalItem.lat || 12.9716},${activeModalItem.lng || 77.5946}`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 font-bold px-3 py-1.5 text-sm rounded-lg transition-colors border border-blue-200 shadow-sm"
+                                    >
+                                        <Navigation className="w-3.5 h-3.5" /> Open in Google Maps <ExternalLink className="w-3 h-3" />
+                                    </a>
+                                </div>
+                            </div>
+
+                            {/* Actions */}
+                            <div className="flex flex-col gap-2.5 pt-4 border-t border-theme-creamDark mt-5">
+                                <button
+                                    onClick={handleMarkPickedUp}
+                                    disabled={isConfirming}
+                                    className="w-full bg-theme-green text-white font-bold py-3 text-sm rounded-xl hover:bg-green-800 disabled:opacity-50 transition-colors shadow-sm"
+                                >
+                                    {isConfirming ? "Confirming..." : "Confirm Pickup"}
+                                </button>
+                                <button
+                                    onClick={handleCancelRequest}
+                                    disabled={isConfirming}
+                                    className="w-full bg-white border border-gray-300 text-gray-600 font-bold py-2.5 text-sm rounded-xl hover:bg-gray-50 disabled:opacity-50 transition-colors shadow-sm"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 };

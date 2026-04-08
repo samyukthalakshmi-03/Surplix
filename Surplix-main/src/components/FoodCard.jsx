@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 
-const FoodCard = ({ item, onInteract, onClaim, onOpenDetails, isDashboardMode = false }) => {
+const FoodCard = ({ item, onInteract, onClaim, onOpenDetails, isDashboardMode = false, customActions }) => {
   const [prevPrice, setPrevPrice] = useState(item.currentPrice);
   const [isPulsing, setIsPulsing] = useState(false);
   const [isClaimMode, setIsClaimMode] = useState(false);
@@ -111,7 +111,7 @@ const FoodCard = ({ item, onInteract, onClaim, onOpenDetails, isDashboardMode = 
         <div className="flex items-center gap-1">🍽️ {item.availableServings}/{item.totalServings}</div>
       </div>
 
-      {isDashboardMode ? (
+      {customActions ? customActions : isDashboardMode ? (
         <button 
           className="w-full bg-theme-dark text-white font-bold text-lg py-4 rounded-[20px] transition-all hover:-translate-y-1 hover:shadow-lg"
           onClick={(e) => {

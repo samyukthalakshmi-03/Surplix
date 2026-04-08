@@ -59,21 +59,21 @@ const SellerDashboard = () => {
 
             {/* Insights Section */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-center gap-4">
-                    <div className="bg-blue-50 p-4 rounded-2xl text-blue-500">
+                <div className="bg-white p-6 rounded-[32px] border border-theme-creamDark shadow-sm flex items-center gap-4 hover:-translate-y-1 transition-transform">
+                    <div className="bg-theme-mint/20 p-4 rounded-2xl text-theme-mint">
                         <Package className="w-8 h-8" />
                     </div>
                     <div>
-                        <div className="text-sm font-bold text-gray-500">Total Food Listed</div>
+                        <div className="text-sm font-bold text-theme-dark/60">Total Food Listed</div>
                         <div className="text-3xl font-black text-theme-dark">{totalListed} pt</div>
                     </div>
                 </div>
-                <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-center gap-4">
-                    <div className="bg-green-50 p-4 rounded-2xl text-theme-green">
+                <div className="bg-white p-6 rounded-[32px] border border-theme-creamDark shadow-sm flex items-center gap-4 hover:-translate-y-1 transition-transform">
+                    <div className="bg-theme-green/20 p-4 rounded-2xl text-theme-green">
                         <CheckCircle className="w-8 h-8" />
                     </div>
                     <div>
-                        <div className="text-sm font-bold text-gray-500">Total Claimed</div>
+                        <div className="text-sm font-bold text-theme-dark/60">Total Claimed</div>
                         <div className="text-3xl font-black text-theme-dark">{totalClaimedParts} pt</div>
                     </div>
                 </div>
@@ -105,9 +105,9 @@ const SellerDashboard = () => {
             )}
 
             {myItems.length === 0 ? (
-                <div className="text-center py-24 bg-white rounded-3xl border border-gray-100 shadow-sm px-4">
+                <div className="text-center py-24 bg-theme-cream/40 rounded-[32px] border border-theme-creamDark shadow-sm px-4">
                    <div className="text-6xl mb-4 opacity-50">🍽️</div>
-                   <p className="text-theme-dark/60 mb-6 text-lg font-medium">You haven't listed any surplus food yet.</p>
+                   <p className="text-theme-dark/60 mb-6 text-lg font-bold">You haven't listed any surplus food yet.</p>
                    <Link to="/list" className="bg-theme-green text-white px-8 py-3 rounded-full font-bold hover:bg-green-800 shadow-md">
                      Create Your First Listing
                    </Link>

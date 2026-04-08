@@ -26,7 +26,7 @@ const Navbar = () => {
               <div className="hidden xl:flex space-x-6 lg:space-x-8 items-center font-medium text-sm lg:text-base whitespace-nowrap">
                 <Link to="/" className={isActive('/')}>{t('home')}</Link>
                 {user?.user_metadata?.role === 'organization' ? (
-                    <Link to="/ngo-dashboard" className={isActive('/ngo-dashboard')}>NGO Dashboard</Link>
+                    <Link to="/ngo-dashboard" className={isActive('/ngo-dashboard')}>Dashboard</Link>
                 ) : (
                     <Link to="/seller-dashboard" className={isActive('/seller-dashboard')}>Dashboard</Link>
                 )}

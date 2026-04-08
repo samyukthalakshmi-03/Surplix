@@ -174,7 +174,7 @@ const Login = () => {
                 <button 
                   type="button" 
                   onClick={() => setRole('user')}
-                  className={`flex-1 py-4 px-2 rounded-2xl border-2 flex flex-col items-center justify-center gap-2 transition-all ${role === 'user' ? 'border-theme-green bg-theme-green/10 text-theme-green' : 'border-gray-100 bg-gray-50 text-gray-500 hover:border-gray-200'}`}
+                  className={`flex-1 py-4 px-2 rounded-2xl border-2 flex flex-col items-center justify-center gap-2 transition-all ${role === 'user' ? 'border-theme-green bg-theme-mint/20 text-theme-green' : 'border-theme-creamDark bg-theme-cream/30 text-theme-dark/50 hover:border-theme-green/50'}`}
                 >
                     <User className="w-6 h-6" />
                     <span className="font-bold text-sm">User</span>
@@ -182,7 +182,7 @@ const Login = () => {
                 <button 
                   type="button" 
                   onClick={() => setRole('organization')}
-                  className={`flex-1 py-4 px-2 rounded-2xl border-2 flex flex-col items-center justify-center gap-2 transition-all ${role === 'organization' ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-gray-100 bg-gray-50 text-gray-500 hover:border-gray-200'}`}
+                  className={`flex-1 py-4 px-2 rounded-2xl border-2 flex flex-col items-center justify-center gap-2 transition-all ${role === 'organization' ? 'border-theme-orange bg-theme-yellow/20 text-theme-orange' : 'border-theme-creamDark bg-theme-cream/30 text-theme-dark/50 hover:border-theme-orange/50'}`}
                 >
                     <Building2 className="w-6 h-6" />
                     <span className="font-bold text-sm">Organization</span>
@@ -260,7 +260,7 @@ const Login = () => {
                     />
                   </div>
 
-                  <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                  <div className="bg-theme-cream/20 p-4 rounded-2xl border border-theme-creamDark">
                      <label className="block text-sm font-bold text-theme-dark mb-2 flex items-center gap-2">
                          <MapPin className="w-4 h-4 text-theme-mint" /> Location
                      </label>
@@ -268,7 +268,7 @@ const Login = () => {
                          <button
                             type="button"
                             onClick={detectLocation}
-                            className="w-full bg-white border border-gray-200 text-gray-700 font-bold px-4 py-3 rounded-xl hover:bg-gray-50 flex justify-center items-center gap-2 transition-colors"
+                            className="w-full bg-white border border-theme-creamDark text-theme-dark/70 font-bold px-4 py-3 rounded-[20px] hover:border-theme-green hover:text-theme-green flex justify-center items-center gap-2 transition-colors"
                          >
                             {locating ? <><Loader2 className="w-5 h-5 animate-spin" /> Detecting...</> : 'Auto-Detect Location'}
                          </button>

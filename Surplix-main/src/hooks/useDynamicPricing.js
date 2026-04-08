@@ -210,6 +210,28 @@ export const useDynamicPricing = () => {
     setActiveClaims(prev => prev.map(c => c.id === claimId ? { ...c, status: 'Collected' } : c));
   };
 
+  const lockItem = async (id) => {
+     setItems(prev => prev.map(item => item.id === id ? { ...item, status: 'ngo_locked' } : item));
+     try {
+       await supabase.from('food_items').update({ status: 'ngo_locked' }).eq('id', id);
+     } catch (err) { console.log(err); fetchItems(); }
+  };
+
+  const pickupItem = async (id) => {
+     setItems(prev => prev.map(item => item.id === id ? { ...item, status: 'picked_up', available_servings: 0 } : item));
+     try {
+       await supabase.from('food_items').update({ status: 'picked_up', available_servings: 0 }).eq('id', id);
+     } catch (err) { console.log(err); fetchItems(); }
+  };
+
+  const unlockItem = async (id, originalStatus) => {
+     const statusToRevert = originalStatus || 'available'; // Default back to available
+     setItems(prev => prev.map(item => item.id === id ? { ...item, status: statusToRevert } : item));
+     try {
+       await supabase.from('food_items').update({ status: statusToRevert }).eq('id', id);
+     } catch (err) { console.log(err); fetchItems(); }
+  };
+
   const addItem = async (newItem) => {
     if (!user) {
       alert("Please login to list food items!");
@@ -279,5 +301,5 @@ export const useDynamicPricing = () => {
     imageUrl: item.image_url || localStorage.getItem(`food_image_${item.id}`) || null
   }));
 
-  return { items: normalizedItems, handleInteract, handleClaim, addItem, activeClaims, markClaimCollected };
+  return { items: normalizedItems, handleInteract, handleClaim, addItem, activeClaims, markClaimCollected, lockItem, pickupItem, unlockItem };
 };
