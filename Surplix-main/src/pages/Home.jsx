@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import 'leaflet/dist/leaflet.css';
 import { usePricing } from '../context/PricingContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -15,6 +15,7 @@ L.Marker.prototype.options.icon = DefaultIcon;
 const Home = () => {
   const { items } = usePricing();
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const markersGroupRef = useRef(null);
@@ -32,6 +33,12 @@ const Home = () => {
       }).addTo(mapInstanceRef.current);
 
       markersGroupRef.current = L.layerGroup().addTo(mapInstanceRef.current);
+      
+      setTimeout(() => {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.invalidateSize();
+        }
+      }, 250);
     }
 
     // Clear old markers when items array changes (so it doesn't duplicate)
@@ -121,7 +128,7 @@ const Home = () => {
       <section className="w-full relative py-32 md:py-40 text-center flex flex-col items-center z-10 border-b border-theme-creamDark mx-auto">
         <div 
           className="absolute inset-0 z-[-5] bg-cover bg-center blur-sm scale-105"
-          style={{ backgroundImage: 'url("/hero-bg.png")' }}
+          style={{ backgroundImage: 'url("/food-waste-ph.webp")' }}
         ></div>
         <div className="absolute inset-0 z-[-4] bg-stone-900/40"></div>
         <div className="absolute inset-0 z-[-3] bg-gradient-to-br from-theme-cream/30 to-theme-green/20 mix-blend-overlay"></div>
@@ -145,35 +152,79 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Map Interactive Section */}
-      <section className="w-full py-20 bg-[#efebe1]/50 border-b border-theme-creamDark">
-        <div className="max-w-7xl mx-auto px-4 w-full">
-          <h2 className="text-3xl font-extrabold mb-10 text-center">{t('map_title')} 🗺️</h2>
-          <div className="h-[500px] w-full rounded-[32px] overflow-hidden shadow-lg border-2 border-theme-green/20 relative z-0 bg-white">
-            <div ref={mapRef} style={{ height: '100%', width: '100%' }}></div>
+      {/* Map Interactive Section - Premium Dark Mode Layout */}
+      <section className="w-full py-32 bg-theme-dark relative border-b-4 border-theme-green overflow-hidden">
+        {/* Glow overlay */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-theme-green/20 rounded-full blur-[120px] pointer-events-none"></div>
+        
+        <div className="max-w-7xl mx-auto px-4 w-full relative z-10 flex flex-col lg:flex-row items-center gap-16">
+          <div className="lg:w-1/3 text-white text-center lg:text-left">
+            <span className="text-theme-green font-extrabold tracking-widest uppercase text-sm mb-3 block">Live Ecosystem</span>
+            <h2 className="text-4xl lg:text-5xl font-extrabold mb-6 leading-tight">{t('map_title')} 🗺️</h2>
+            <p className="text-gray-300 font-medium text-lg leading-relaxed mb-10">
+              Watch real-time food rescues happening across your city. Discover verified NGOs, community organizers, and incredible hyper-local food drops waiting to be safely claimed near you.
+            </p>
+            <div className="flex flex-col sm:flex-row lg:flex-col gap-4">
+              <div className="bg-white/10 p-6 rounded-3xl backdrop-blur-md border border-white/10 hover:bg-white/20 transition-colors cursor-pointer w-full text-left">
+                <p className="font-extrabold text-4xl text-theme-green mb-1 drop-shadow-md">24+</p>
+                <p className="text-sm text-gray-300 font-bold uppercase tracking-wide">Active Communities</p>
+              </div>
+              <div className="bg-white/10 p-6 rounded-3xl backdrop-blur-md border border-white/10 hover:bg-white/20 transition-colors cursor-pointer w-full text-left">
+                <p className="font-extrabold text-4xl text-theme-yellow mb-1 drop-shadow-md">10.5k</p>
+                <p className="text-sm text-gray-300 font-bold uppercase tracking-wide">Meals Rescued Locally</p>
+              </div>
+            </div>
+          </div>
+          <div className="lg:w-2/3 w-full">
+            <div className="h-[500px] lg:h-[650px] w-full rounded-[40px] overflow-hidden shadow-[0_0_80px_rgba(46,125,50,0.4)] border-[6px] border-white/10 relative z-0 bg-white">
+              <div ref={mapRef} style={{ height: '100%', width: '100%' }}></div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* How it Works block */}
-      <section className="max-w-7xl mx-auto py-24 px-4 w-full text-center">
-        <h2 className="text-3xl font-extrabold mb-16">{t('how_it_works')}</h2>
-        <div className="grid md:grid-cols-3 gap-12">
-          <div className="flex flex-col items-center">
-            <div className="w-24 h-24 bg-theme-lightGreen text-theme-green rounded-full flex items-center justify-center text-5xl mb-6 shadow-sm">🥘</div>
-            <h3 className="text-xl font-bold mb-2">{t('upload_surplus')}</h3>
-            <p className="text-theme-dark/70">{t('upload_desc')}</p>
+      {/* What's Waiting in the App block - Features Showcase */}
+      <section className="w-full relative py-40 bg-gradient-to-b from-theme-cream to-white overflow-hidden border-t border-theme-creamDark">
+        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-theme-mint/30 rounded-full blur-[140px] -mr-40 -mt-40 pointer-events-none"></div>
+        <div className="absolute bottom-10 left-0 w-[500px] h-[500px] bg-theme-yellow/20 rounded-full blur-[100px] -ml-20 -mb-20 pointer-events-none"></div>
+        
+        <div className="max-w-7xl mx-auto px-4 w-full relative z-10 text-center">
+          <span className="text-theme-orange font-extrabold tracking-widest uppercase text-sm mb-3 block">Discover Surplix</span>
+          <h2 className="text-5xl lg:text-6xl font-extrabold mb-8 text-theme-dark tracking-tight">Features Waiting For You</h2>
+          <p className="text-xl text-theme-dark/70 font-medium mb-16 max-w-3xl mx-auto">We're more than just a marketplace. We've built an entire ecosystem to ensure absolutely zero food goes to waste.</p>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 pb-10 text-left">
+            {/* Feature 1 */}
+             <div className="bg-white/80 backdrop-blur-xl p-8 rounded-[36px] shadow-xl shadow-theme-green/5 border border-white/80 hover:-translate-y-3 hover:shadow-2xl transition-all duration-500 group relative flex flex-col">
+                 <div className="w-16 h-16 bg-gradient-to-br from-theme-lightGreen to-theme-green text-white rounded-2xl flex items-center justify-center text-3xl mb-6 shadow-md transform rotate-3 group-hover:rotate-12 transition-transform duration-500">🤖</div>
+                 <h3 className="text-xl font-extrabold text-theme-dark mb-3">AI Quality Scanning</h3>
+                 <p className="text-theme-dark/70 font-medium text-[15px] leading-relaxed flex-grow">Every listing is automatically scanned by our computer vision AI to ensure physical freshness and flag decaying items.</p>
+             </div>
+             
+             {/* Feature 2 */}
+             <div className="bg-white/80 backdrop-blur-xl p-8 rounded-[36px] shadow-xl shadow-theme-orange/5 border border-white/80 hover:-translate-y-3 hover:shadow-2xl transition-all duration-500 group relative flex flex-col">
+                 <div className="w-16 h-16 bg-gradient-to-br from-orange-200 to-theme-orange text-white rounded-2xl flex items-center justify-center text-3xl mb-6 shadow-md transform -rotate-3 group-hover:-rotate-12 transition-transform duration-500">🥗</div>
+                 <h3 className="text-xl font-extrabold text-theme-dark mb-3">Dietary & Allergens</h3>
+                 <p className="text-theme-dark/70 font-medium text-[15px] leading-relaxed flex-grow">Strict categorization for Veg, Non-Veg, and Vegan diets alongside transparent warnings for nuts, dairy, and gluten.</p>
+             </div>
+             
+             {/* Feature 3 */}
+             <div className="bg-white/80 backdrop-blur-xl p-8 rounded-[36px] shadow-xl shadow-blue-500/5 border border-white/80 hover:-translate-y-3 hover:shadow-2xl transition-all duration-500 group relative flex flex-col">
+                 <div className="w-16 h-16 bg-gradient-to-br from-blue-200 to-blue-500 text-white rounded-2xl flex items-center justify-center text-3xl mb-6 shadow-md transform rotate-6 group-hover:rotate-0 transition-transform duration-500">🤝</div>
+                 <h3 className="text-xl font-extrabold text-theme-dark mb-3">Direct NGO Donations</h3>
+                 <p className="text-theme-dark/70 font-medium text-[15px] leading-relaxed flex-grow">Connect perfectly good un-purchased bulk food securely to registered local charity foundations.</p>
+             </div>
+             
+             {/* Feature 4 */}
+             <div className="bg-white/80 backdrop-blur-xl p-8 rounded-[36px] shadow-xl shadow-theme-yellow/5 border border-white/80 hover:-translate-y-3 hover:shadow-2xl transition-all duration-500 group relative flex flex-col">
+                 <div className="w-16 h-16 bg-gradient-to-br from-yellow-200 to-theme-yellow text-white rounded-2xl flex items-center justify-center text-3xl mb-6 shadow-md transform -rotate-6 group-hover:rotate-0 transition-transform duration-500">🚜</div>
+                 <h3 className="text-xl font-extrabold text-theme-dark mb-3">Animal Farm Routing</h3>
+                 <p className="text-theme-dark/70 font-medium text-[15px] leading-relaxed flex-grow">If the AI detects highly spoiled organic wastes, the system instantly directs you to agricultural farms for animal compost!</p>
+             </div>
           </div>
-          <div className="flex flex-col items-center">
-            <div className="w-24 h-24 bg-orange-50 text-theme-orange rounded-full flex items-center justify-center text-5xl mb-6 shadow-sm">✨</div>
-            <h3 className="text-xl font-bold mb-2">{t('smart_pricing')}</h3>
-            <p className="text-theme-dark/70">{t('smart_desc')}</p>
-          </div>
-          <div className="flex flex-col items-center">
-            <div className="w-24 h-24 bg-yellow-50 text-theme-yellow rounded-full flex items-center justify-center text-5xl mb-6 shadow-sm">🤝</div>
-            <h3 className="text-xl font-bold mb-2">{t('community_claims')}</h3>
-            <p className="text-theme-dark/70">{t('community_desc')}</p>
-          </div>
+          <Link to="/browse" className="inline-block bg-theme-dark text-white font-extrabold text-lg px-10 py-5 rounded-full hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/20 transition-all">
+             View All {items.filter(item => item.status === 'available').length} Live Listings ✨
+          </Link>
         </div>
       </section>
     </div>

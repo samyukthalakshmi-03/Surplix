@@ -1,8 +1,10 @@
 import React, { useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
 
 const FoodDetails = ({ item, onClose, onInteract }) => {
   const { t } = useLanguage();
+  const { user } = useAuth();
 
   useEffect(() => {
     if (!item) return;
@@ -23,7 +25,7 @@ const FoodDetails = ({ item, onClose, onInteract }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm" onClick={onClose}>
       <div 
-        className="bg-theme-cream rounded-[32px] p-8 max-w-lg w-full shadow-2xl relative border-2 border-theme-creamDark overflow-hidden"
+        className="bg-theme-cream rounded-[32px] p-8 max-w-lg w-full max-h-[90vh] shadow-2xl relative border-2 border-theme-creamDark overflow-y-auto hide-scrollbar"
         onClick={(e) => e.stopPropagation()}
       >
         <button 
@@ -34,9 +36,6 @@ const FoodDetails = ({ item, onClose, onInteract }) => {
         </button>
 
         <div className="mb-4 mt-2">
-          <span className="inline-block bg-white text-theme-green px-4 py-1.5 rounded-full text-xs font-bold shadow-sm border border-theme-creamDark mb-4">
-            {t('freshly_cooked')}
-          </span>
           {item.imageUrl && (
             <div className="mb-4">
               <img src={item.imageUrl} alt={item.name} className="w-full h-56 object-cover rounded-[24px] shadow-sm border border-theme-creamDark" />
@@ -65,6 +64,35 @@ const FoodDetails = ({ item, onClose, onInteract }) => {
           )}
           <p className="text-5xl font-extrabold text-theme-yellow price-glow">₹{item.currentPrice}</p>
         </div>
+
+        {user && user.id && item.user_id === user.id && (item.totalServings - item.availableServings) > 0 && (
+          <div className="bg-[#e8f5e9] border border-theme-green p-5 rounded-[24px] mb-6 shadow-sm">
+            <h3 className="font-extrabold text-theme-dark mb-4 border-b border-theme-mint/20 pb-3">📦 Order History</h3>
+            <ul className="space-y-4">
+              {(() => {
+                const globalClaims = JSON.parse(localStorage.getItem('surplix_claims') || '[]');
+                const relatedClaims = globalClaims.filter(c => c.itemId === item.id);
+                const loops = Math.max(item.totalServings - item.availableServings, relatedClaims.length);
+                
+                return [...Array(loops)].map((_, i) => {
+                  const claimInfo = relatedClaims[i] || { buyerName: 'Community Member', qty: 1, price: item.currentPrice };
+                  return (
+                    <li key={i} className="flex justify-between items-center text-sm bg-white/50 p-3 rounded-xl border border-theme-green/10">
+                      <div>
+                        <strong className="text-theme-dark block text-base leading-tight mb-0.5">Bought by <span className="text-theme-green">{claimInfo.buyerName}</span></strong>
+                        <span className="text-theme-dark/80 text-[11px] font-extrabold uppercase tracking-wide bg-theme-creamDark/50 px-2 py-0.5 rounded-md inline-block">Surplix Community Member</span>
+                      </div>
+                      <div className="text-right">
+                        <strong className="text-theme-green block text-base font-extrabold">₹{claimInfo.price}</strong>
+                        <span className="text-theme-dark/60 text-xs font-medium">{claimInfo.qty} serving(s)</span>
+                      </div>
+                    </li>
+                  )
+                });
+              })()}
+            </ul>
+          </div>
+        )}
 
         <div className="bg-white p-4 rounded-[20px] mb-6 flex flex-col gap-2 shadow-sm border border-theme-creamDark">
           {item.foodType && <p className="text-sm"><strong>Food Type:</strong> {item.foodType}</p>}

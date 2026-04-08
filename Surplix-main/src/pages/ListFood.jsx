@@ -144,7 +144,7 @@ const ListFood = () => {
       allergens: formData.allergens,
       lat: formData.lat || null,
       lng: formData.lng || null,
-      imageUrl: imageFile ? URL.createObjectURL(imageFile) : null
+      imageUrl: formData.imageBase64 || (imageFile ? URL.createObjectURL(imageFile) : null)
     });
     navigate('/browse');
   };
@@ -157,6 +157,39 @@ const ListFood = () => {
     setIsCheckingImage(true);
     setAiAnalysis(null);
     setError('');
+
+    // Convert to base64 for persistent local display
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 800;
+        const MAX_HEIGHT = 800;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+        setFormData((prev) => ({ ...prev, imageBase64: dataUrl }));
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
 
     const fd = new FormData();
     fd.append('file', file);
@@ -186,19 +219,35 @@ const ListFood = () => {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-bold text-theme-dark mb-2">Upload Photo of Food (AI Validation)</label>
+            <label className="block text-sm font-bold text-theme-dark mb-2">{t('upload_photo_label')}</label>
             <input 
               type="file" 
               accept="image/*" 
               className="w-full px-4 py-3 rounded-2xl border border-theme-creamDark focus:ring-2 focus:ring-theme-green outline-none bg-theme-cream/30" 
               onChange={handleImageUpload} 
             />
-            {isCheckingImage && <p className="text-theme-dark/70 text-sm mt-2 font-medium">Checking if food is fresh using AI (requires GPU server!)...</p>}
+            {isCheckingImage && <p className="text-theme-dark/70 text-sm mt-2 font-medium">{t('ai_checking')}</p>}
             {aiAnalysis && (
-              <div className={`mt-3 p-3 rounded-xl border ${aiAnalysis.spoiled ? 'bg-red-50 border-red-200 text-red-600' : 'bg-green-50 border-green-200 text-green-700'}`}>
-                <p className="font-bold text-sm">
-                  AI Analysis: {aiAnalysis.spoiled ? 'This food appears to be spoiled!' : 'This food looks fresh!'}
-                </p>
+              <div className={`mt-3 p-4 rounded-xl border ${aiAnalysis.spoiled ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}>
+                {aiAnalysis.spoiled ? (
+                    <div>
+                      <p className="font-bold text-red-700 text-base mb-2">
+                        ⚠️ AI Analysis: This food appears to be spoiled or rotting!
+                      </p>
+                      <p className="text-sm text-red-600 mb-4 font-medium">For health and safety reasons, spoiled food cannot be listed on the main marketplace for human consumption.</p>
+                      <button 
+                        type="button"
+                        onClick={() => navigate('/farms')} 
+                        className="bg-orange-500 text-white font-bold px-4 py-2.5 rounded-xl text-sm hover:bg-orange-600 transition-colors shadow-sm flex items-center justify-center gap-2 w-full"
+                      >
+                        <span className="text-lg">🚜</span> Sell/Donate to Animal Farms Instead
+                      </button>
+                    </div>
+                ) : (
+                    <p className="font-bold text-sm text-green-700">
+                      ✅ AI Analysis: This food looks fresh and safe!
+                    </p>
+                )}
               </div>
             )}
             {imageFile && (
@@ -259,13 +308,13 @@ const ListFood = () => {
             )}
           </div>
           <div>
-            <label className="block text-sm font-bold text-theme-dark mb-2">Prepared Time</label>
-            <input required type="text" className="w-full px-4 py-3 rounded-[20px] shadow-sm border border-theme-creamDark focus:ring-2 focus:ring-theme-green outline-none bg-white" value={formData.preparedBefore} onChange={e => setFormData({ ...formData, preparedBefore: e.target.value })} placeholder="e.g. 2 hours ago" />
+            <label className="block text-sm font-bold text-theme-dark mb-2">{t('prepared_time_label')}</label>
+            <input required type="text" className="w-full px-4 py-3 rounded-[20px] shadow-sm border border-theme-creamDark focus:ring-2 focus:ring-theme-green outline-none bg-white" value={formData.preparedBefore} onChange={e => setFormData({ ...formData, preparedBefore: e.target.value })} placeholder={t('prepared_time_placeholder')} />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
             <div>
-              <label className="block text-sm font-bold text-theme-dark mb-2">Food Type</label>
+              <label className="block text-sm font-bold text-theme-dark mb-2">{t('food_type_label')}</label>
               <select className="w-full px-4 py-3 rounded-2xl border border-theme-creamDark focus:ring-2 focus:ring-theme-green outline-none bg-theme-cream/30" value={formData.foodType} onChange={e => setFormData({ ...formData, foodType: e.target.value })}>
                 <option value="Veg">Veg</option>
                 <option value="Non-Veg">Non-Veg</option>
@@ -273,8 +322,14 @@ const ListFood = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-bold text-theme-dark mb-2">Allergens</label>
-              <input type="text" className="w-full px-4 py-3 rounded-2xl border border-theme-creamDark focus:ring-2 focus:ring-theme-green outline-none bg-theme-cream/30" value={formData.allergens} onChange={e => setFormData({ ...formData, allergens: e.target.value })} placeholder="e.g. Gluten, Lactose" />
+              <label className="block text-sm font-bold text-theme-dark mb-2">{t('allergens_label')}</label>
+              <select className="w-full px-4 py-3 rounded-2xl border border-theme-creamDark focus:ring-2 focus:ring-theme-green outline-none bg-theme-cream/30" value={formData.allergens} onChange={e => setFormData({ ...formData, allergens: e.target.value })}>
+                <option value="">None (Safe for most)</option>
+                <option value="Contains Gluten">Contains Gluten</option>
+                <option value="Contains Dairy">Contains Dairy / Lactose</option>
+                <option value="Contains Nuts">Contains Nuts</option>
+                <option value="Contains Gluten, Dairy">Contains Gluten & Dairy</option>
+              </select>
             </div>
           </div>
 

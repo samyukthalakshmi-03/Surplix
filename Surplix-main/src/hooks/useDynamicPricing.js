@@ -172,7 +172,8 @@ export const useDynamicPricing = () => {
       time: new Date().toISOString(),
       status: 'Pending Pickup',
       pickupWindow: 'Today before 8:00 PM',
-      contact: '+91 9876543210' // Demo contact
+      contact: '+91 9876543210', // Demo contact
+      buyerName: user?.user_metadata?.display_name || 'Community Member'
     };
 
     setActiveClaims(prev => [...prev, claimDetails]);
@@ -249,6 +250,13 @@ export const useDynamicPricing = () => {
       }
 
       if (data) {
+        if (newItem.imageUrl) {
+          try {
+            localStorage.setItem(`food_image_${data.id}`, newItem.imageUrl);
+          } catch (e) {
+            console.error('Could not save image locally:', e);
+          }
+        }
         setItems(prev => [...prev, calculatePrice(data)]);
       }
     } catch (err) {
@@ -267,7 +275,8 @@ export const useDynamicPricing = () => {
     priceFloor: item.price_floor,
     preparedBefore: item.prepared_before,
     foodType: item.food_type,
-    allergens: item.allergens
+    allergens: item.allergens,
+    imageUrl: item.image_url || localStorage.getItem(`food_image_${item.id}`) || null
   }));
 
   return { items: normalizedItems, handleInteract, handleClaim, addItem, activeClaims, markClaimCollected };

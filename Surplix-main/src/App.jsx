@@ -10,6 +10,8 @@ import ListFood from './pages/ListFood';
 import About from './pages/About';
 import Login from './pages/Login';
 import Community from './pages/Community';
+import MyListings from './pages/MyListings';
+import AnimalFarms from './pages/AnimalFarms';
 import Footer from './components/Footer';
 import './index.css';
 
@@ -28,6 +30,8 @@ function App() {
                 <Route path="/list" element={<ListFood />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/community" element={<Community />} />
+                <Route path="/my-listings" element={<MyListings />} />
+                <Route path="/farms" element={<AnimalFarms />} />
                 <Route path="/login" element={<Login />} />
               </Routes>
             </div>

@@ -4,10 +4,12 @@ import { useLanguage } from '../context/LanguageContext';
 import FoodCard from '../components/FoodCard';
 import FoodDetails from '../components/FoodDetails';
 import { getDistance } from '../utils/geo';
+import { useAuth } from '../context/AuthContext';
 
 const BrowseFood = () => {
   const { items, handleInteract, handleClaim, activeClaims, markClaimCollected } = usePricing();
   const { t } = useLanguage();
+  const { user } = useAuth();
   const [userLocation, setUserLocation] = useState(null);
   const [geoError, setGeoError] = useState(false);
   const [selectedItemId, setSelectedItemId] = useState(null);
@@ -50,8 +52,15 @@ const BrowseFood = () => {
     return { ...item, distance: Number.MAX_VALUE };
   });
 
+  const sellerOrders = processedItems.filter(
+    item => user && user.id && item.user_id === user.id && item.totalServings > item.availableServings
+  );
+
   const displayItems = processedItems
-    .filter(item => item.status === 'available' && item.availableServings > 0)
+    .filter(item => {
+      if (user && user.id && item.user_id === user.id) return false;
+      return item.status === 'available' && item.availableServings > 0;
+    })
     .filter(item => {
       if (!userLocation) return true;
       return item.distance <= selectedRadius;
@@ -91,6 +100,34 @@ const BrowseFood = () => {
         </div>
       </header>
 
+      {/* Seller Orders Banner */}
+      {sellerOrders.length > 0 && (
+        <div className="bg-[#e8f5e9] border-2 border-theme-green/30 px-6 py-5 rounded-3xl mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-sm">
+          <div className="shrink-0">
+            <h3 className="font-extrabold text-2xl text-theme-dark mb-1">🔔 Your Food Was Claimed!</h3>
+            <p className="font-medium text-theme-dark/70 text-lg">Please prepare these items for pickup.</p>
+          </div>
+          <div className="flex gap-4 overflow-x-auto w-full pb-2 md:pb-0 snap-x hide-scrollbar">
+             {sellerOrders.map(order => {
+                const orderClaims = activeClaims?.filter(c => c.itemId === order.id) || [];
+                const lastBuyer = orderClaims.length > 0 ? orderClaims[orderClaims.length - 1].buyerName : "Community Member";
+                
+                return (
+                  <div key={order.id} className="bg-white border border-theme-green/20 px-5 py-4 rounded-2xl min-w-[220px] shadow-sm shrink-0 snap-center">
+                      <div className="bg-theme-yellow/20 text-yellow-800 text-xs font-bold inline-block px-2 py-1 rounded-lg mb-2">
+                         Claimed by: {lastBuyer}
+                      </div>
+                    <p className="font-extrabold text-xl text-theme-dark mb-1">
+                       <span className="text-theme-green">{order.totalServings - order.availableServings}x</span> {order.name}
+                    </p>
+                    <p className="text-sm text-theme-dark/60 font-medium">📍 {order.location}</p>
+                </div>
+                )
+             })}
+          </div>
+        </div>
+      )}
+
       {/* Filter and Sort Bar */}
       <div className="bg-white p-4 rounded-3xl shadow-sm border border-theme-creamDark mb-10 flex flex-col md:flex-row gap-4 items-center justify-between flex-wrap">
         <div className="flex flex-wrap items-center gap-4 w-full md:w-auto">
@@ -101,29 +138,29 @@ const BrowseFood = () => {
               onChange={e => setFilterType(e.target.value)}
               className="bg-theme-cream/50 border border-theme-creamDark px-4 py-2 rounded-xl outline-none focus:ring-2 focus:ring-theme-green w-full md:w-40 font-medium"
             >
-              <option value="All">All types</option>
-              <option value="Veg">Veg</option>
-              <option value="Non-Veg">Non-Veg</option>
-              <option value="Vegan">Vegan</option>
+              <option value="All">{t('show_all') || 'All types'}</option>
+              <option value="Veg">{t('Veg') || 'Veg'}</option>
+              <option value="Non-Veg">{t('Non-Veg') || 'Non-Veg'}</option>
+              <option value="Vegan">{t('Vegan') || 'Vegan'}</option>
             </select>
           </div>
 
           <div className="flex items-center gap-2">
-            <label className="font-bold text-theme-dark whitespace-nowrap">Dietary Needs:</label>
+            <label className="font-bold text-theme-dark whitespace-nowrap">{t('dietary_needs_label')}</label>
             <select 
               value={allergenFilter} 
               onChange={e => setAllergenFilter(e.target.value)}
               className="bg-theme-cream/50 border border-theme-creamDark px-4 py-2 rounded-xl outline-none focus:ring-2 focus:ring-theme-green w-full md:w-40 font-medium"
             >
-              <option value="All">None (Show All)</option>
-              <option value="Gluten-Free">Gluten-Free</option>
-              <option value="Dairy-Free">Dairy-Free</option>
-              <option value="Nut-Free">Nut-Free</option>
+              <option value="All">{t('show_all')}</option>
+              <option value="Gluten-Free">{t('gluten_free')}</option>
+              <option value="Dairy-Free">{t('dairy_free')}</option>
+              <option value="Nut-Free">{t('nut_free')}</option>
             </select>
           </div>
 
           <div className="flex items-center gap-3 bg-white border border-theme-creamDark px-3 py-1.5 rounded-xl">
-            <label className="font-bold text-theme-dark whitespace-nowrap">Radius:</label>
+            <label className="font-bold text-theme-dark whitespace-nowrap">{t('radius_label')}</label>
             <input 
               type="range" 
               min="2" max="15" step="1" 
@@ -141,17 +178,17 @@ const BrowseFood = () => {
             Showing food within {selectedRadius} km
           </span>
           <div className="flex items-center gap-2 w-full md:w-auto">
-            <label className="font-bold text-theme-dark whitespace-nowrap">Sort By:</label>
+            <label className="font-bold text-theme-dark whitespace-nowrap">{t('sort_by_label')}</label>
           <select 
             value={sortBy} 
             onChange={e => setSortBy(e.target.value)}
             className="bg-theme-cream/50 border border-theme-creamDark px-4 py-2 rounded-xl outline-none focus:ring-2 focus:ring-theme-green w-full md:w-48 font-medium"
           >
-            <option value="Distance">Nearest Distance</option>
-            <option value="Newest">Newest First</option>
-            <option value="Quantity">Highest Quantity</option>
-            <option value="PriceLowHigh">Price: Low to High</option>
-            <option value="PriceHighLow">Price: High to Low</option>
+            <option value="Distance">{t('nearest_distance')}</option>
+            <option value="Newest">{t('newest_first')}</option>
+            <option value="Quantity">{t('highest_quantity')}</option>
+            <option value="PriceLowHigh">{t('price_low_high')}</option>
+            <option value="PriceHighLow">{t('price_high_low')}</option>
           </select>
         </div>
       </div>
@@ -169,7 +206,7 @@ const BrowseFood = () => {
         ))}
         {displayItems.length === 0 && (
           <div className="col-span-full py-20 text-center text-theme-dark/60 text-lg bg-white rounded-[32px] border border-theme-creamDark shadow-sm">
-            {t('no_listings')}
+            {t('no_listings').replace('10', selectedRadius)}
           </div>
         )}
       </main>

@@ -1,13 +1,15 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
 
-const FoodCard = ({ item, onInteract, onClaim, onOpenDetails }) => {
+const FoodCard = ({ item, onInteract, onClaim, onOpenDetails, isDashboardMode = false }) => {
   const [prevPrice, setPrevPrice] = useState(item.currentPrice);
   const [isPulsing, setIsPulsing] = useState(false);
   const [isClaimMode, setIsClaimMode] = useState(false);
   const [claimQty, setClaimQty] = useState(1);
   const cardRef = useRef(null);
   const { t } = useLanguage();
+  const { user } = useAuth();
 
   useEffect(() => {
     if (item.currentPrice !== prevPrice) {
@@ -33,9 +35,7 @@ const FoodCard = ({ item, onInteract, onClaim, onOpenDetails }) => {
         if (onOpenDetails) onOpenDetails(item.id);
       }}
     >
-      <div className="absolute -top-3 -right-2 bg-white z-10 text-theme-green px-4 py-1.5 rounded-full text-xs font-bold shadow-md border border-theme-creamDark">
-        {t('freshly_cooked')}
-      </div>
+
 
       {item.imageUrl && (
         <div className="mb-3 -mx-2 -mt-2">
@@ -111,7 +111,17 @@ const FoodCard = ({ item, onInteract, onClaim, onOpenDetails }) => {
         <div className="flex items-center gap-1">🍽️ {item.availableServings}/{item.totalServings}</div>
       </div>
 
-      {!isClaimMode ? (
+      {isDashboardMode ? (
+        <button 
+          className="w-full bg-theme-dark text-white font-bold text-lg py-4 rounded-[20px] transition-all hover:-translate-y-1 hover:shadow-lg"
+          onClick={(e) => {
+             e.stopPropagation();
+             if (onOpenDetails) onOpenDetails(item.id);
+          }}
+        >
+          ⚙️ Manage Listing
+        </button>
+      ) : !isClaimMode ? (
         <button 
           className="w-full bg-theme-green text-white font-bold text-lg py-4 rounded-[20px] transition-all hover:-translate-y-1 hover:shadow-lg disabled:bg-theme-creamDark disabled:text-theme-dark/40 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none"
           onClick={(e) => {

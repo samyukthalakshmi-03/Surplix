@@ -9,6 +9,7 @@ const Login = () => {
   const { signIn, signUp } = useAuth();
   
   const [isLogin, setIsLogin] = useState(true);
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
@@ -25,7 +26,7 @@ const Login = () => {
         if (error) throw error;
         navigate('/browse');
       } else {
-        const { error } = await signUp(email, password, { display_name: email.split('@')[0] });
+        const { error } = await signUp(email, password, { display_name: name || email.split('@')[0] });
         if (error) throw error;
         // Supabase returns no error on success, but user might need to check email.
         alert('Success! Please check your email for confirmation link if email confirmation is turned on. Otherwise, you can login directly.');
@@ -51,6 +52,19 @@ const Login = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {!isLogin && (
+            <div>
+              <label className="block text-sm font-bold text-theme-dark mb-2">Full Name</label>
+              <input 
+                type="text" 
+                required
+                placeholder="e.g. Rahul Sharma"
+                className="w-full px-4 py-3 rounded-2xl border border-theme-creamDark focus:ring-2 focus:ring-theme-green outline-none bg-theme-cream/30 text-theme-dark placeholder-theme-dark/40 transition-colors"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
+          )}
           <div>
             <label className="block text-sm font-bold text-theme-dark mb-2">{t('login_email') || 'Email Address'}</label>
             <input 

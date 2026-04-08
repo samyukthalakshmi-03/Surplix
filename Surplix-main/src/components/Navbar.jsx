@@ -15,11 +15,17 @@ const Navbar = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-20 items-center">
             <div className="flex items-center gap-3">
-              <Link to="/" className="text-3xl font-extrabold text-theme-green tracking-tight">{t('brand_name')}</Link>
+              <Link to="/" className="flex items-center gap-2">
+                {/* Logo Image */}
+                <img src="/logo.png" alt="Surplix Logo" className="h-14 mix-blend-multiply object-contain -ml-2" />
+                {/* Brand Name */}
+                <span className="text-3xl font-extrabold text-theme-green tracking-tight">{t('brand_name')}</span>
+              </Link>
             </div>
             <div className="hidden md:flex space-x-8 items-center font-medium">
               <Link to="/" className={isActive('/')}>{t('home')}</Link>
               <Link to="/browse" className={isActive('/browse')}>{t('browse')}</Link>
+              <Link to="/my-listings" className={isActive('/my-listings')}>{t('my_listings')}</Link>
               <Link to="/about" className={isActive('/about')}>{t('about')}</Link>
               <Link to="/community" className={isActive('/community')}>{t('community')}</Link>
             </div>
