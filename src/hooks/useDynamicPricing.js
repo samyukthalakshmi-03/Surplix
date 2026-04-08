@@ -151,11 +151,13 @@ export const useDynamicPricing = () => {
     }
 
     const itemToUpdate = items.find(item => item.id === id);
-    if (!itemToUpdate || itemToUpdate.available_servings <= 0) return;
+    if (!itemToUpdate || itemToUpdate.status === 'claimed' || itemToUpdate.status === 'donated' || itemToUpdate.available_servings <= 0) return;
 
-    const newAvailable = itemToUpdate.available_servings - 1;
-    const newStatus = newAvailable === 0 ? 'sold_out' : 'available';
+    const newAvailable = 0;
+    const newStatus = 'claimed';
     const newInterested = itemToUpdate.interested + 1;
+
+    alert("Item successfully claimed 🎉");
 
     // Optimistic update
     setItems(prevItems => prevItems.map(item => {
