@@ -4,7 +4,15 @@ import { useAuth } from '../context/AuthContext';
 
 export const useDynamicPricing = () => {
   const [items, setItems] = useState([]);
+  const [activeClaims, setActiveClaims] = useState(() => {
+    const saved = localStorage.getItem('surplix_claims');
+    return saved ? JSON.parse(saved) : [];
+  });
   const { user } = useAuth();
+
+  useEffect(() => {
+    localStorage.setItem('surplix_claims', JSON.stringify(activeClaims));
+  }, [activeClaims]);
 
   // Fetch initial data
   const fetchItems = async () => {
@@ -57,28 +65,26 @@ export const useDynamicPricing = () => {
   }, []);
 
   const calculatePrice = (item) => {
-    // Math-based dynamic pricing drop algorithm
+    // Reverse Auction Model
     if (item.status !== 'available' || item.available_servings === 0) return item;
 
-    const DROP_AMOUNT = 10;
-    let intervalMs = 10000; // 10 seconds default drop rate
-    let delayBeforeDropMs = 0;
+    // 1. Fixed Configuration
+    const DROP_INTERVAL_MS = 2 * 60 * 1000; // Fixed interval (2 minutes)
+    const DROP_AMOUNT = Math.max(1, Math.floor(item.initial_price * 0.15)); // Configurable drop amount (e.g., 15%)
 
-    // "when food is listed for 30 rupees it should be constant... if time taken is too long then it has to decrease"
-    if (item.initial_price === 30 || item.initial_price <= 30) {
-      delayBeforeDropMs = 3600000; // Wait 1 hour before it starts dropping
-    }
-
+    // 2. Use Timestamps
     const createdAt = new Date(item.created_at).getTime();
-    const timeElapsed = Date.now() - createdAt;
+    const currentTime = Date.now(); // Reliable client-side timestamp synchronized globally
     
-    let intervalsPassed = 0;
-    if (timeElapsed > delayBeforeDropMs) {
-      intervalsPassed = Math.floor((timeElapsed - delayBeforeDropMs) / intervalMs);
-    }
+    // 3. Calculate intervals passed
+    const timeElapsed = currentTime - createdAt;
+    const intervalsPassed = Math.max(0, Math.floor(timeElapsed / DROP_INTERVAL_MS));
 
+    // 4. Formula: currentPrice = initialPrice - (numberOfIntervals * dropAmount)
     let currentPrice = item.initial_price - (intervalsPassed * DROP_AMOUNT);
 
+    // 5. Ensure price never goes below minimum price (floor price)
+    // 6. Stop price reduction once minimum price is reached + Trigger NGO Allocation
     if (currentPrice <= item.price_floor) {
       return {
         ...item,
@@ -143,21 +149,33 @@ export const useDynamicPricing = () => {
     }
   };
 
-  const handleClaim = async (id) => {
-    // Check if user is logged in
+  const handleClaim = async (id, claimQty = 1) => {
     if (!user) {
       alert("Please login to claim food items!");
-      return;
+      return null;
     }
 
     const itemToUpdate = items.find(item => item.id === id);
-    if (!itemToUpdate || itemToUpdate.status === 'claimed' || itemToUpdate.status === 'donated' || itemToUpdate.available_servings <= 0) return;
+    if (!itemToUpdate || itemToUpdate.status === 'claimed' || itemToUpdate.status === 'donated' || itemToUpdate.available_servings < claimQty) return null;
 
-    const newAvailable = 0;
-    const newStatus = 'claimed';
+    const newAvailable = itemToUpdate.available_servings - claimQty;
+    const newStatus = newAvailable === 0 ? 'claimed' : 'available';
     const newInterested = itemToUpdate.interested + 1;
 
-    alert("Item successfully claimed 🎉");
+    const claimDetails = {
+      id: "claim_" + Date.now(),
+      itemId: id,
+      name: itemToUpdate.name,
+      location: itemToUpdate.location,
+      price: itemToUpdate.current_price,
+      qty: claimQty,
+      time: new Date().toISOString(),
+      status: 'Pending Pickup',
+      pickupWindow: 'Today before 8:00 PM',
+      contact: '+91 999-000-1111' // Demo contact
+    };
+
+    setActiveClaims(prev => [...prev, claimDetails]);
 
     // Optimistic update
     setItems(prevItems => prevItems.map(item => {
@@ -183,6 +201,12 @@ export const useDynamicPricing = () => {
       console.log(err);
       fetchItems(); // revert optimistic update
     }
+    
+    return claimDetails;
+  };
+
+  const markClaimCollected = (claimId) => {
+    setActiveClaims(prev => prev.map(c => c.id === claimId ? { ...c, status: 'Collected' } : c));
   };
 
   const addItem = async (newItem) => {
@@ -246,5 +270,5 @@ export const useDynamicPricing = () => {
     allergens: item.allergens
   }));
 
-  return { items: normalizedItems, handleInteract, handleClaim, addItem };
+  return { items: normalizedItems, handleInteract, handleClaim, addItem, activeClaims, markClaimCollected };
 };

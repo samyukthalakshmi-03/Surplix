@@ -4,6 +4,8 @@ import { useLanguage } from '../context/LanguageContext';
 const FoodCard = ({ item, onInteract, onClaim, onOpenDetails }) => {
   const [prevPrice, setPrevPrice] = useState(item.currentPrice);
   const [isPulsing, setIsPulsing] = useState(false);
+  const [isClaimMode, setIsClaimMode] = useState(false);
+  const [claimQty, setClaimQty] = useState(1);
   const cardRef = useRef(null);
   const { t } = useLanguage();
 
@@ -48,9 +50,20 @@ const FoodCard = ({ item, onInteract, onClaim, onOpenDetails }) => {
               ⏱ {item.preparedBefore}
             </span>
           )}
-          <span className="block mt-1 text-sm text-theme-dark/70">
-             📍 {t(item.location)} {item.distance ? `• ${item.distance.toFixed(1)} ${t('distance_km')}` : ''} 
-          </span>
+          <div className="flex items-center mt-2 text-sm text-theme-dark/70 flex-wrap gap-2">
+             <span>📍 {t(item.location)} {item.distance ? `• ${item.distance.toFixed(1)} ${t('distance_km')}` : ''}</span>
+             {item.lat && item.lng && (
+               <a 
+                 href={`https://www.google.com/maps/search/?api=1&query=${item.lat},${item.lng}`} 
+                 target="_blank" 
+                 rel="noopener noreferrer"
+                 onClick={(e) => e.stopPropagation()}
+                 className="text-xs text-blue-600 hover:text-blue-800 hover:underline font-bold bg-blue-50 px-2 py-0.5 rounded-full"
+               >
+                 🗺 View exact on Maps
+               </a>
+             )}
+          </div>
         </div>
       </div>
 
@@ -92,17 +105,52 @@ const FoodCard = ({ item, onInteract, onClaim, onOpenDetails }) => {
         <div className="flex items-center gap-1">🍽️ {item.availableServings}/{item.totalServings}</div>
       </div>
 
-      <button 
-        className="w-full bg-theme-green text-white font-bold text-lg py-4 rounded-[20px] transition-all hover:-translate-y-1 hover:shadow-lg disabled:bg-theme-creamDark disabled:text-theme-dark/40 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none"
-        onClick={(e) => {
-          e.stopPropagation();
-          onInteract(item.id, 'interest');
-          onClaim(item.id);
-        }}
-        disabled={item.availableServings === 0 || isDonated || isOutsideRadius}
-      >
-        {item.availableServings === 0 ? t('sold_out') : isDonated ? t('donated_to_ngo') : isOutsideRadius ? t('outside_radius') : `🚀 ${t('claim')} (₹${item.currentPrice})`}
-      </button>
+      {!isClaimMode ? (
+        <button 
+          className="w-full bg-theme-green text-white font-bold text-lg py-4 rounded-[20px] transition-all hover:-translate-y-1 hover:shadow-lg disabled:bg-theme-creamDark disabled:text-theme-dark/40 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none"
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsClaimMode(true);
+            setClaimQty(1);
+            onInteract(item.id, 'interest');
+          }}
+          disabled={item.availableServings === 0 || isDonated || isOutsideRadius}
+        >
+          {item.availableServings === 0 ? t('sold_out') : isDonated ? t('donated_to_ngo') : isOutsideRadius ? t('outside_radius') : `🚀 ${t('claim')} (₹${item.currentPrice})`}
+        </button>
+      ) : (
+        <div className="bg-white p-4 rounded-[20px] shadow-sm border border-theme-green outline-none" onClick={e => e.stopPropagation()}>
+          <label className="block text-sm font-bold text-theme-dark mb-2 text-center">Select Quantity</label>
+          <div className="flex justify-center items-center gap-4 mb-4">
+            <button 
+              className="w-10 h-10 rounded-full bg-theme-cream/80 text-theme-dark font-bold text-xl hover:bg-theme-green hover:text-white transition-colors"
+              onClick={() => setClaimQty(Math.max(1, claimQty - 1))}
+            >-</button>
+            <span className="text-2xl font-bold text-theme-dark w-12 text-center">{claimQty}</span>
+            <button 
+              className="w-10 h-10 rounded-full bg-theme-cream/80 text-theme-dark font-bold text-xl hover:bg-theme-green hover:text-white transition-colors"
+              onClick={() => setClaimQty(Math.min(item.availableServings, claimQty + 1))}
+            >+</button>
+          </div>
+          <p className="text-center text-xs text-theme-dark/60 font-bold mb-3">Available: {item.availableServings}</p>
+          <div className="flex gap-2">
+            <button 
+              className="w-1/3 bg-gray-100 text-theme-dark/70 font-bold py-3 rounded-2xl hover:bg-gray-200 transition-colors"
+              onClick={() => setIsClaimMode(false)}
+            >Cancel</button>
+            <button 
+              className="w-2/3 bg-theme-green text-white font-bold py-3 rounded-2xl hover:bg-green-800 transition-colors shadow-sm whitespace-nowrap"
+              onClick={async () => {
+                const claimDetails = await onClaim(item.id, claimQty);
+                setIsClaimMode(false);
+                if (claimDetails) {
+                   alert(`✅ Claim Confirmed!\n\nYou claimed ${claimQty}x ${item.name} for ₹${item.currentPrice * claimQty}.\n\n📍 Pickup at: ${item.location}\n🕒 Time Window: ${claimDetails.pickupWindow}\n📞 Contact: ${claimDetails.contact}`);
+                }
+              }}
+            >Confirm • ₹{item.currentPrice * claimQty}</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

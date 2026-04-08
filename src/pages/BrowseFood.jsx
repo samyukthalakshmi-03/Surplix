@@ -6,7 +6,7 @@ import FoodDetails from '../components/FoodDetails';
 import { getDistance } from '../utils/geo';
 
 const BrowseFood = () => {
-  const { items, handleInteract, handleClaim } = usePricing();
+  const { items, handleInteract, handleClaim, activeClaims, markClaimCollected } = usePricing();
   const { t } = useLanguage();
   const [userLocation, setUserLocation] = useState(null);
   const [geoError, setGeoError] = useState(false);
@@ -180,6 +180,36 @@ const BrowseFood = () => {
           onClose={() => setSelectedItemId(null)}
           onInteract={handleInteract}
         />
+      )}
+
+      {/* Active Claims Banner */}
+      {activeClaims?.filter(c => c.status === 'Pending Pickup').length > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.1)] border-t border-theme-creamDark p-4 md:p-6 z-[100] pb-8 md:pb-6">
+          <div className="max-w-7xl mx-auto">
+            <h3 className="text-xl font-bold text-theme-dark mb-4">🛒 Active Pickups ({activeClaims.filter(c => c.status === 'Pending Pickup').length})</h3>
+            <div className="flex gap-4 overflow-x-auto pb-2 snap-x hide-scrollbar">
+              {activeClaims.filter(c => c.status === 'Pending Pickup').map(claim => (
+                <div key={claim.id} className="min-w-[300px] bg-theme-cream/40 border border-theme-creamDark rounded-[24px] p-5 snap-center shrink-0 shadow-sm relative transition-all">
+                  <div className="absolute top-4 right-4 bg-theme-yellow/20 text-yellow-700 px-3 py-1.5 rounded-full text-xs font-bold border border-yellow-200">
+                    {claim.status}
+                  </div>
+                  <h4 className="font-extrabold text-xl text-theme-dark mb-1">{claim.qty}x {claim.name}</h4>
+                  <div className="text-sm text-theme-dark/80 mb-4 space-y-1.5">
+                    <p className="flex items-center gap-2"><span>📍</span> <span className="font-medium">{claim.location}</span></p>
+                    <p className="flex items-center gap-2"><span>🕒</span> <span className="font-medium">{claim.pickupWindow}</span></p>
+                    <p className="flex items-center gap-2"><span>📞</span> <span className="font-medium">{claim.contact}</span></p>
+                  </div>
+                  <button 
+                    onClick={() => markClaimCollected(claim.id)} 
+                    className="w-full bg-theme-dark text-white font-bold py-3.5 rounded-2xl text-sm hover:bg-gray-800 transition-all hover:shadow-lg"
+                  >
+                    Mark as Collected ✓
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

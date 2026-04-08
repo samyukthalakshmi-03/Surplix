@@ -38,9 +38,20 @@ const FoodDetails = ({ item, onClose, onInteract }) => {
             {t('freshly_cooked')}
           </span>
           <h2 className="text-3xl font-bold text-theme-dark">{t(item.name)}</h2>
-          <p className="mt-2 text-theme-dark/70 text-lg">
-            📍 {t(item.location)} {item.distance ? `• ${item.distance.toFixed(1)} ${t('distance_km')}` : ''}
-          </p>
+          <div className="mt-2 text-theme-dark/70 text-lg flex items-center justify-center gap-2 flex-wrap">
+            <span>📍 {t(item.location)} {item.distance ? `• ${item.distance.toFixed(1)} ${t('distance_km')}` : ''}</span>
+            {item.lat && item.lng && (
+              <a 
+                href={`https://www.google.com/maps/search/?api=1&query=${item.lat},${item.lng}`} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="text-sm bg-theme-green/10 text-theme-green hover:bg-theme-green hover:text-white px-3 py-1 rounded-full transition-colors font-bold ml-1 flex items-center gap-1 shadow-sm"
+              >
+                <span>🗺️</span> Exact Location
+              </a>
+            )}
+          </div>
         </div>
 
         <div className="bg-white/60 p-6 rounded-[24px] border border-theme-creamDark my-6 text-center">
