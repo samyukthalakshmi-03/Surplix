@@ -61,6 +61,40 @@ const Home = () => {
       }
     });
 
+    const mockNGOs = [
+      { name: "Akshaya Patra Foundation", location: "Vasanth Nagar, Bengaluru", lat: 12.9830, lng: 77.5925, desc: "Large scale food distribution NGO" },
+      { name: "Feeding India - South", location: "Koramangala, Bengaluru", lat: 12.9352, lng: 77.6245, desc: "Surplus food redistribution" },
+      { name: "Robin Hood Army Area 4", location: "Indiranagar, Bengaluru", lat: 12.9784, lng: 77.6408, desc: "Volunteer based food delivery" },
+      { name: "Local Food Bank", location: "Jayanagar, Bengaluru", lat: 12.9299, lng: 77.5834, desc: "Community food storage and sharing" },
+      { name: "Snehadeep Trust", location: "Frazer Town, Bengaluru", lat: 12.9968, lng: 77.6130, desc: "Welfare for the visually impaired and disabled" },
+      { name: "Goonj Drop Centre", location: "HSR Layout, Bengaluru", lat: 12.9121, lng: 77.6446, desc: "Disaster relief and community development" },
+      { name: "Sparsha Trust", location: "Banashankari, Bengaluru", lat: 12.9175, lng: 77.5562, desc: "Child rights and education focus" },
+      { name: "Mitra Foundation", location: "Malleswaram, Bengaluru", lat: 13.0031, lng: 77.5643, desc: "Elderly care and meal support" },
+      { name: "Seva Foundation", location: "Rajajinagar, Bengaluru", lat: 12.9881, lng: 77.5549, desc: "Community food sharing" },
+      { name: "Raksha NGO", location: "Whitefield, Bengaluru", lat: 12.9698, lng: 77.7499, desc: "Food distribution for daily wage workers" }
+    ];
+
+    const ngoIcon = L.divIcon({
+      className: 'bg-transparent',
+      html: '<div style="background-color: #3b82f6; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 50%; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 2px solid white; font-size: 18px;">🤝</div>',
+      iconSize: [36, 36],
+      iconAnchor: [18, 18]
+    });
+
+    mockNGOs.forEach(ngo => {
+      L.marker([ngo.lat, ngo.lng], { icon: ngoIcon }).addTo(markersGroupRef.current)
+       .bindPopup(`
+         <div style="text-align: center; font-family: sans-serif; min-width: 180px; padding: 5px;">
+           <div style="background-color: #eff6ff; color: #1d4ed8; padding: 4px 8px; border-radius: 12px; font-weight: bold; font-size: 0.7rem; display: inline-block; margin-bottom: 8px;">VERIFIED NGO</div>
+           <h3 style="font-weight: bold; font-size: 1.1rem; color: #1f2937; margin: 0 0 5px 0;">${ngo.name}</h3>
+           <p style="font-size: 0.8rem; color: #4b5563; margin: 0 0 8px 0;">📍 ${ngo.location}</p>
+           <p style="font-size: 0.85rem; color: #111827; margin: 0 0 10px 0; font-weight: 500;">${ngo.desc}</p>
+           <a href="mailto:contact@${ngo.name.replace(/\s+/g, '').toLowerCase()}.org" style="display: block; background-color: #3b82f6; color: #ffffff; padding: 6px 12px; border-radius: 999px; text-decoration: none; font-weight: bold; font-size: 0.9rem; text-align: center;">Donate Surplus Directly</a>
+         </div>
+       `);
+      boundCoordinates.push([ngo.lat, ngo.lng]);
+    });
+
     // Auto fit map bounds if we have at least one valid coordinate
     if (boundCoordinates.length > 0) {
       const bounds = L.latLngBounds(boundCoordinates);

@@ -7,6 +7,7 @@ export const translations = {
     home: "Home",
     browse: "Browse Food",
     about: "About",
+    community: "Community",
     login: "Log In",
     list_food: "List Food",
     freshly_cooked: "Freshly Cooked 🍃",
@@ -22,7 +23,7 @@ export const translations = {
     
     // Map
     user_location: "Your Location",
-    map_title: "Active Surplus Nearby",
+    map_title: "Active Surplus & Nearby NGOs",
     
     // Location Filter
     distance_km: "km away",
@@ -112,6 +113,7 @@ export const translations = {
     home: "ಮುಖಪುಟ",
     browse: "ಆಹಾರವನ್ನು ಬ್ರೌಸ್ ಮಾಡಿ",
     about: "ನಮ್ಮ ಬಗ್ಗೆ",
+    community: "ಸಮುದಾಯ",
     login: "ಲಾಗಿನ್",
     list_food: "ಆಹಾರ ಸೇರಿಸಿ",
     freshly_cooked: "ಹೊಸದಾಗಿ ಬೇಯಿಸಿದ 🍃",
@@ -127,7 +129,7 @@ export const translations = {
     
     // Map
     user_location: "ನಿಮ್ಮ ಸ್ಥಳ",
-    map_title: "ಹತ್ತಿರದ ಸಕ್ರಿಯ ಆಹಾರ",
+    map_title: "ಸಕ್ರಿಯ ಹೆಚ್ಚುವರಿ ಆಹಾರ ಮತ್ತು ಹತ್ತಿರದ ಎನ್‌ಜಿಒಗಳು",
     
     // Location Filter
     distance_km: "ಕಿಮೀ ದೂರ",
@@ -217,6 +219,7 @@ export const translations = {
     home: "होम",
     browse: "भोजन खोजें",
     about: "हमारे बारे में",
+    community: "समुदाय",
     login: "लॉग इन",
     list_food: "भोजन जोड़ें",
     freshly_cooked: "ताज़ा पकाया हुआ 🍃",
@@ -232,7 +235,7 @@ export const translations = {
     
     // Map
     user_location: "आपका स्थान",
-    map_title: "आसपास सक्रिय भोजन",
+    map_title: "सक्रिय अतिरिक्त और आस-पास के गैर सरकारी संगठन",
     
     // Location Filter
     distance_km: "किमी दूर",

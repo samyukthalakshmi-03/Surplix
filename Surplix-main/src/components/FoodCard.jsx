@@ -33,9 +33,15 @@ const FoodCard = ({ item, onInteract, onClaim, onOpenDetails }) => {
         if (onOpenDetails) onOpenDetails(item.id);
       }}
     >
-      <div className="absolute -top-3 -right-2 bg-white text-theme-green px-4 py-1.5 rounded-full text-xs font-bold shadow-md border border-theme-creamDark">
+      <div className="absolute -top-3 -right-2 bg-white z-10 text-theme-green px-4 py-1.5 rounded-full text-xs font-bold shadow-md border border-theme-creamDark">
         {t('freshly_cooked')}
       </div>
+
+      {item.imageUrl && (
+        <div className="mb-3 -mx-2 -mt-2">
+          <img src={item.imageUrl} alt={item.name} className="w-full h-48 object-cover rounded-[24px] shadow-sm border border-green-200/50" />
+        </div>
+      )}
 
       <div className="flex justify-between items-start mb-2 mt-4">
         <div>

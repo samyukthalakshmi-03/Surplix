@@ -143,7 +143,8 @@ const ListFood = () => {
       foodType: formData.foodType,
       allergens: formData.allergens,
       lat: formData.lat || null,
-      lng: formData.lng || null
+      lng: formData.lng || null,
+      imageUrl: imageFile ? URL.createObjectURL(imageFile) : null
     });
     navigate('/browse');
   };
@@ -198,6 +199,11 @@ const ListFood = () => {
                 <p className="font-bold text-sm">
                   AI Analysis: {aiAnalysis.spoiled ? 'This food appears to be spoiled!' : 'This food looks fresh!'}
                 </p>
+              </div>
+            )}
+            {imageFile && (
+              <div className="mt-4">
+                <img src={URL.createObjectURL(imageFile)} alt="Food preview" className="w-full max-h-64 object-cover rounded-[20px] shadow-sm border border-theme-creamDark" />
               </div>
             )}
           </div>

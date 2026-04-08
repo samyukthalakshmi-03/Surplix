@@ -69,7 +69,7 @@ export const useDynamicPricing = () => {
     if (item.status !== 'available' || item.available_servings === 0) return item;
 
     // 1. Fixed Configuration
-    const DROP_INTERVAL_MS = 2 * 60 * 1000; // Fixed interval (2 minutes)
+    const DROP_INTERVAL_MS = 30 * 60 * 1000; // Fixed interval (30 minutes)
     const DROP_AMOUNT = Math.max(1, Math.floor(item.initial_price * 0.15)); // Configurable drop amount (e.g., 15%)
 
     // 2. Use Timestamps
@@ -172,7 +172,7 @@ export const useDynamicPricing = () => {
       time: new Date().toISOString(),
       status: 'Pending Pickup',
       pickupWindow: 'Today before 8:00 PM',
-      contact: '+91 999-000-1111' // Demo contact
+      contact: '+91 9876543210' // Demo contact
     };
 
     setActiveClaims(prev => [...prev, claimDetails]);

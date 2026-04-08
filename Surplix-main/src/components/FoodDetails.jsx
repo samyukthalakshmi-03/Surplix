@@ -37,6 +37,11 @@ const FoodDetails = ({ item, onClose, onInteract }) => {
           <span className="inline-block bg-white text-theme-green px-4 py-1.5 rounded-full text-xs font-bold shadow-sm border border-theme-creamDark mb-4">
             {t('freshly_cooked')}
           </span>
+          {item.imageUrl && (
+            <div className="mb-4">
+              <img src={item.imageUrl} alt={item.name} className="w-full h-56 object-cover rounded-[24px] shadow-sm border border-theme-creamDark" />
+            </div>
+          )}
           <h2 className="text-3xl font-bold text-theme-dark">{t(item.name)}</h2>
           <div className="mt-2 text-theme-dark/70 text-lg flex items-center justify-center gap-2 flex-wrap">
             <span>📍 {t(item.location)} {item.distance ? `• ${item.distance.toFixed(1)} ${t('distance_km')}` : ''}</span>

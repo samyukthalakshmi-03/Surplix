@@ -9,6 +9,7 @@ import BrowseFood from './pages/BrowseFood';
 import ListFood from './pages/ListFood';
 import About from './pages/About';
 import Login from './pages/Login';
+import Community from './pages/Community';
 import Footer from './components/Footer';
 import './index.css';
 
@@ -26,6 +27,7 @@ function App() {
                 <Route path="/browse" element={<BrowseFood />} />
                 <Route path="/list" element={<ListFood />} />
                 <Route path="/about" element={<About />} />
+                <Route path="/community" element={<Community />} />
                 <Route path="/login" element={<Login />} />
               </Routes>
             </div>
