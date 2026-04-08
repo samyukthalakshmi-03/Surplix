@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+python-multipart
+# Use standard torch for now; user can reinstall with cu118 if needed
+torch
+torchvision
+Pillow
