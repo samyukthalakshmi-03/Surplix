@@ -13,7 +13,42 @@ export const AuthProvider = ({ children }) => {
       try {
         const { data, error } = await supabase.auth.getSession();
         if (data?.session) {
-          setUser(data.session.user);
+          const u = data.session.user;
+          setUser(u);
+
+          // Auto-register the signed-in org to the local list
+          if (u && u.user_metadata?.role === 'organization') {
+              const meta = u.user_metadata;
+              let registeredFarms = [];
+              try {
+                  registeredFarms = JSON.parse(localStorage.getItem('surplix_registered_farms') || '[]');
+              } catch (e) {}
+
+              const exists = registeredFarms.find(f => f.name === meta.display_name || f.name === meta.org_name);
+              if (!exists) {
+                  let feedType = 'Various Feed';
+                  let desc = 'A verified partner looking for safe food scraps to recycle.';
+                  const orgType = meta.org_type || 'Farm';
+                  
+                  if (orgType === 'NGO') {
+                     feedType = 'Donations / Compostable scraps';
+                     desc = 'A verified NGO organization working with food waste and animal welfare.';
+                  } else if (orgType !== 'Farm') {
+                     feedType = 'General Donations';
+                     desc = `A verified ${orgType} organization registered on our platform.`;
+                  }
+
+                  registeredFarms.push({
+                      id: Date.now(),
+                      name: meta.display_name || meta.org_name,
+                      location: meta.location?.address || 'Registered Location',
+                      types: feedType,
+                      contact: meta.phone || 'Registration Phone',
+                      desc: desc
+                  });
+                  localStorage.setItem('surplix_registered_farms', JSON.stringify(registeredFarms));
+              }
+          }
         }
       } catch (err) {
         console.error("Error fetching session:", err);
@@ -27,7 +62,42 @@ export const AuthProvider = ({ children }) => {
     // Listen for changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
-        setUser(session?.user ?? null);
+        const u = session?.user ?? null;
+        setUser(u);
+        
+        // Auto-register the signed-in org to the local list so it doesn't get lost
+        if (u && u.user_metadata?.role === 'organization') {
+            const meta = u.user_metadata;
+            let registeredFarms = [];
+            try {
+                registeredFarms = JSON.parse(localStorage.getItem('surplix_registered_farms') || '[]');
+            } catch (e) {}
+
+            const exists = registeredFarms.find(f => f.name === meta.display_name || f.name === meta.org_name);
+            if (!exists) {
+                let feedType = 'Various Feed';
+                let desc = 'A verified partner looking for safe food scraps to recycle.';
+                const orgType = meta.org_type || 'Farm';
+                
+                if (orgType === 'NGO') {
+                   feedType = 'Donations / Compostable scraps';
+                   desc = 'A verified NGO organization working with food waste and animal welfare.';
+                } else if (orgType !== 'Farm') {
+                   feedType = 'General Donations';
+                   desc = `A verified ${orgType} organization registered on our platform.`;
+                }
+
+                registeredFarms.push({
+                    id: Date.now(),
+                    name: meta.display_name || meta.org_name,
+                    location: meta.location?.address || 'Registered Location',
+                    types: feedType,
+                    contact: meta.phone || 'Registration Phone',
+                    desc: desc
+                });
+                localStorage.setItem('surplix_registered_farms', JSON.stringify(registeredFarms));
+            }
+        }
       }
     );
 

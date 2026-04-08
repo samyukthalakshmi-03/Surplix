@@ -346,9 +346,19 @@ const ListFood = () => {
           </div>
           
           {error && <p className="text-red-500 font-bold text-sm bg-red-50 px-4 py-2 rounded-lg border border-red-200">{error}</p>}
-          <button type="submit" className="w-full bg-theme-green text-white font-bold text-lg py-4 rounded-[20px] hover:bg-green-800 hover:shadow-lg transition-all mt-4">
-            {t('list_food')}
-          </button>
+          {aiAnalysis?.spoiled ? (
+             <button 
+                type="button" 
+                onClick={() => navigate('/farms')}
+                className="w-full bg-orange-500 text-white font-black text-lg py-4 rounded-[20px] hover:bg-orange-600 hover:shadow-lg transition-all mt-4 flex items-center justify-center gap-2 shadow-orange-500/20"
+             >
+                <span className="text-2xl">🚜</span> Recommend Verified Farms
+             </button>
+          ) : (
+             <button type="submit" className="w-full bg-theme-green text-white font-bold text-lg py-4 rounded-[20px] hover:bg-green-800 hover:shadow-lg transition-all mt-4">
+               {t('list_food')}
+             </button>
+          )}
         </form>
       </div>
     </div>

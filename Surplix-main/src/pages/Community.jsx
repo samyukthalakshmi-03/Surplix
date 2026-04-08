@@ -74,36 +74,36 @@ const Community = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl pt-24">
-      <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8 border border-theme-mint/20">
-        <div className="bg-theme-mint/10 p-8 border-b border-theme-mint/20">
-          <h1 className="text-4xl font-bold text-theme-dark mb-4 flex items-center gap-3">
-            <MessageSquare className="w-10 h-10 text-theme-mint" />
+    <div className="pt-24 max-w-4xl mx-auto px-4 pb-12 min-h-screen">
+      <div className="bg-white rounded-[32px] shadow-sm overflow-hidden mb-8 border border-theme-creamDark mt-10">
+        <div className="bg-theme-cream/50 p-8 border-b border-theme-creamDark">
+          <h1 className="text-4xl font-extrabold text-theme-dark mb-4 flex items-center gap-3 tracking-tight">
+            <MessageSquare className="w-10 h-10 text-theme-green" />
             {t('community_title')}
           </h1>
-          <p className="text-gray-600 text-lg">
+          <p className="text-theme-dark/70 text-lg font-medium">
             {t('community_subtitle')}
           </p>
         </div>
         
         <div className="p-8">
-          <form onSubmit={handlePostSubmit} className="mb-10 bg-gray-50/50 p-6 rounded-2xl border border-gray-100">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <form onSubmit={handlePostSubmit} className="mb-10 bg-theme-cream/30 p-6 rounded-[24px] border border-theme-creamDark">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">{t('food_item_label')}</label>
+                <label className="block text-sm font-bold text-theme-dark mb-2">{t('food_item_label')}</label>
                 <input
                   type="text"
-                  className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-theme-mint focus:border-transparent outline-none bg-white transition-all font-sans"
+                  className="w-full px-4 py-3 rounded-2xl border border-theme-creamDark focus:ring-2 focus:ring-theme-green outline-none bg-white font-medium"
                   placeholder={t('food_item_placeholder')}
                   value={newFood}
                   onChange={(e) => setNewFood(e.target.value)}
                 />
               </div>
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">{t('seller_label')}</label>
+                <label className="block text-sm font-bold text-theme-dark mb-2">{t('seller_label')}</label>
                 <input
                   type="text"
-                  className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-theme-mint focus:border-transparent outline-none bg-white transition-all font-sans"
+                  className="w-full px-4 py-3 rounded-2xl border border-theme-creamDark focus:ring-2 focus:ring-theme-green outline-none bg-white font-medium"
                   placeholder={t('seller_placeholder')}
                   value={newRestaurant}
                   onChange={(e) => setNewRestaurant(e.target.value)}
@@ -111,26 +111,26 @@ const Community = () => {
               </div>
             </div>
             <textarea
-              className="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-theme-mint focus:border-transparent outline-none resize-none bg-white transition-all font-sans"
+              className="w-full px-4 py-3 border border-theme-creamDark rounded-2xl focus:ring-2 focus:ring-theme-green outline-none bg-white font-medium resize-none mb-4"
               rows="3"
               placeholder={t('share_experience_placeholder')}
               value={newPost}
               onChange={(e) => setNewPost(e.target.value)}
             ></textarea>
-            <div className="flex justify-between items-center mt-4">
-              <div className="flex gap-2 text-theme-mint items-center">
-                 <span className="text-sm font-bold text-gray-600 mr-2">{t('rate_label')}</span>
+            <div className="flex flex-col sm:flex-row sm:justify-between items-center gap-4">
+              <div className="flex gap-2 text-theme-green items-center">
+                 <span className="text-sm font-bold text-theme-dark mr-2">{t('rate_label')}</span>
                  {[1, 2, 3, 4, 5].map((star) => (
                    <Star 
                      key={star} 
-                     className={`w-7 h-7 cursor-pointer transition-colors ${star <= newRating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
+                     className={`w-8 h-8 cursor-pointer transition-colors ${star <= newRating ? 'text-theme-yellow fill-current' : 'text-gray-200'}`} 
                      onClick={() => setNewRating(star)}
                    />
                  ))}
               </div>
               <button
                 type="submit"
-                className="bg-theme-green text-white px-8 py-3 rounded-full font-bold hover:bg-green-800 transition-colors shadow-lg shadow-theme-mint/20 flex items-center gap-2"
+                className="w-full sm:w-auto bg-theme-green text-white px-8 py-3.5 rounded-[20px] font-bold hover:bg-green-800 transition-all shadow-sm flex items-center justify-center gap-2"
               >
                 <MessageSquare className="w-5 h-5" />
                 {t('post_review_btn')}
@@ -140,39 +140,39 @@ const Community = () => {
 
           <div className="space-y-6">
             {posts.map((post) => (
-              <div key={post.id} className="bg-white border border-gray-100 rounded-xl p-6 hover:shadow-md transition-shadow group">
+              <div key={post.id} className="bg-white border border-theme-creamDark rounded-[24px] p-6 hover:-translate-y-1 transition-transform shadow-sm group">
                 <div className="flex items-start gap-4">
                   <img
                     src={post.avatar}
                     alt={post.user}
-                    className="w-12 h-12 rounded-full object-cover"
+                    className="w-14 h-14 rounded-full object-cover border-2 border-theme-cream"
                   />
                   <div className="flex-1">
                     <div className="flex justify-between items-start mb-2">
                       <div>
-                        <h3 className="font-bold text-gray-900">{post.user}</h3>
-                        <p className="text-sm text-gray-500">{post.time}</p>
+                        <h3 className="font-bold text-theme-dark text-lg">{post.user}</h3>
+                        <p className="text-sm text-theme-dark/50 font-medium">{post.time}</p>
                       </div>
-                      <div className="flex text-yellow-400">
+                      <div className="flex text-theme-yellow">
                         {[...Array(post.rating)].map((_, i) => (
-                          <Star key={i} className="w-4 h-4 fill-current" />
+                          <Star key={i} className="w-5 h-5 fill-current" />
                         ))}
                       </div>
                     </div>
                     
-                    <div className="inline-flex items-center gap-2 bg-theme-mint/10 text-theme-dark px-3 py-1 rounded-full text-sm font-medium mb-3">
-                      <Utensils className="w-4 h-4 text-theme-mint" />
+                    <div className="inline-flex items-center gap-2 bg-theme-mint/20 text-theme-green px-3 py-1.5 rounded-full text-sm font-bold mb-4 border border-theme-mint/30">
+                      <Utensils className="w-4 h-4" />
                       {post.food} @ {post.restaurant}
                     </div>
                     
-                    <p className="text-gray-700 leading-relaxed group-hover:text-gray-900 transition-colors">
+                    <p className="text-theme-dark/80 font-medium leading-relaxed bg-theme-cream/30 p-4 rounded-xl border border-theme-creamDark">
                       {post.content}
                     </p>
                     
-                    <div className="mt-4 flex items-center gap-4 border-t border-gray-50 pt-4">
-                      <button className="flex items-center gap-2 text-gray-400 hover:text-theme-primary transition-colors">
+                    <div className="mt-5 flex items-center gap-4">
+                      <button className="flex items-center gap-2 text-theme-dark/50 hover:text-theme-green transition-colors font-bold">
                         <ThumbsUp className="w-5 h-5" />
-                        <span className="font-medium">{post.likes}</span>
+                        <span>{post.likes}</span>
                       </button>
                     </div>
                   </div>
