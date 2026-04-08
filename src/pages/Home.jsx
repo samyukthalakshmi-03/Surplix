@@ -39,7 +39,9 @@ const Home = () => {
 
     const boundCoordinates = [];
 
-    items.forEach(item => {
+    const visibleItems = items.filter(item => item.status === 'available');
+
+    visibleItems.forEach(item => {
       if (item.lat && item.lng) {
         const isSoldOut = item.availableServings === 0 || item.status === 'donated';
         const buttonHtml = isSoldOut 

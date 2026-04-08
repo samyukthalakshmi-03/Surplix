@@ -15,6 +15,13 @@ const BrowseFood = () => {
   const [filterType, setFilterType] = useState('All');
   const [allergenFilter, setAllergenFilter] = useState('All');
   const [sortBy, setSortBy] = useState('Distance');
+  const [selectedRadius, setSelectedRadius] = useState(() => {
+    return Number(localStorage.getItem('radius')) || 5;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('radius', selectedRadius);
+  }, [selectedRadius]);
 
   useEffect(() => {
     if ("geolocation" in navigator) {
@@ -44,7 +51,11 @@ const BrowseFood = () => {
   });
 
   const displayItems = processedItems
-    .filter(item => item.status !== 'donated' && item.status !== 'sold_out' && item.availableServings > 0)
+    .filter(item => item.status === 'available' && item.availableServings > 0)
+    .filter(item => {
+      if (!userLocation) return true;
+      return item.distance <= selectedRadius;
+    })
     .filter(item => filterType === 'All' || item.foodType === filterType)
     .filter(item => {
       if (allergenFilter === 'All') return true;
@@ -110,10 +121,27 @@ const BrowseFood = () => {
               <option value="Nut-Free">Nut-Free</option>
             </select>
           </div>
+
+          <div className="flex items-center gap-3 bg-white border border-theme-creamDark px-3 py-1.5 rounded-xl">
+            <label className="font-bold text-theme-dark whitespace-nowrap">Radius:</label>
+            <input 
+              type="range" 
+              min="2" max="15" step="1" 
+              value={selectedRadius}
+              onChange={e => setSelectedRadius(Number(e.target.value))}
+              className="w-24 md:w-32 h-1.5 bg-theme-creamDark rounded-lg appearance-none cursor-pointer accent-theme-green"
+              title={`Showing food within ${selectedRadius} km`}
+            />
+            <span className="font-bold text-theme-green text-sm min-w-[45px] text-right">{selectedRadius} km</span>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2 w-full md:w-auto">
-          <label className="font-bold text-theme-dark whitespace-nowrap">Sort By:</label>
+        <div className="flex items-center gap-4 w-full md:w-auto mt-4 md:mt-0">
+          <span className="text-theme-dark/70 text-sm font-bold hidden xl:inline-block bg-theme-cream/50 px-3 py-1.5 rounded-xl border border-theme-creamDark">
+            Showing food within {selectedRadius} km
+          </span>
+          <div className="flex items-center gap-2 w-full md:w-auto">
+            <label className="font-bold text-theme-dark whitespace-nowrap">Sort By:</label>
           <select 
             value={sortBy} 
             onChange={e => setSortBy(e.target.value)}
@@ -126,6 +154,7 @@ const BrowseFood = () => {
             <option value="PriceHighLow">Price: High to Low</option>
           </select>
         </div>
+      </div>
       </div>
 
       <main className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
