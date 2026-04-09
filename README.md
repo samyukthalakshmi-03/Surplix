@@ -143,7 +143,7 @@ Most platforms treat food waste as a **convenience problem**
 ## 🛠 Tech Stack
 
 - **Frontend:** React + Tailwind CSS  
-- **Backend:** Node.js / Supabase / Firebase  
-- **Database:** Supabase / Firebase  
+- **Backend:** Supabase
+- **Database:** Supabase 
 - **Maps:** Google Maps API  
-- **AI:** Food detection + NGO prioritization  
+- **AI:** Food detection  
