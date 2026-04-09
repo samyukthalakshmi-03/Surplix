@@ -22,3 +22,12 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Project specifics
+__pycache__/
+*.pyc
+cleanup.mjs
+test_db.mjs
+clean_db_auth.mjs
+fix_translations.js
+package-lock.json

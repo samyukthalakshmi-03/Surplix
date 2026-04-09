@@ -4,6 +4,7 @@ import { PricingProvider } from './context/PricingContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
+import ProtectedRoute from './components/ProtectedRoute';
 import Home from './pages/Home';
 import BrowseFood from './pages/BrowseFood';
 import ListFood from './pages/ListFood';
@@ -28,11 +29,11 @@ function App() {
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/browse" element={<BrowseFood />} />
-                <Route path="/list" element={<ListFood />} />
+                <Route path="/list" element={<ProtectedRoute><ListFood /></ProtectedRoute>} />
                 <Route path="/about" element={<About />} />
                 <Route path="/community" element={<Community />} />
-                <Route path="/seller-dashboard" element={<SellerDashboard />} />
-                <Route path="/ngo-dashboard" element={<NGODashboard />} />
+                <Route path="/seller-dashboard" element={<ProtectedRoute><SellerDashboard /></ProtectedRoute>} />
+                <Route path="/ngo-dashboard" element={<ProtectedRoute><NGODashboard /></ProtectedRoute>} />
                 <Route path="/farms" element={<AnimalFarms />} />
                 <Route path="/login" element={<Login />} />
               </Routes>

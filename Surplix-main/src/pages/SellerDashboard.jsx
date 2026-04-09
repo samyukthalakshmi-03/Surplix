@@ -3,10 +3,10 @@ import { usePricing } from '../context/PricingContext';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { Link } from 'react-router-dom';
-import { Package, TrendingDown, Clock, MapPin, Phone, MessageSquare, CheckCircle, AlertCircle, ExternalLink, Leaf, User } from 'lucide-react';
+import { Package, TrendingDown, Clock, MapPin, Phone, MessageSquare, CheckCircle, AlertCircle, ExternalLink, Leaf, User, Trash2 } from 'lucide-react';
 
 const SellerDashboard = () => {
-    const { items } = usePricing();
+    const { items, stats, deleteItem } = usePricing();
     const { user } = useAuth();
     const { t } = useLanguage();
     const [currentTime, setCurrentTime] = useState(Date.now());
@@ -19,8 +19,8 @@ const SellerDashboard = () => {
     if (!user) {
         return (
             <div className="pt-32 text-center h-screen bg-theme-cream px-4 flex flex-col items-center">
-                <h1 className="text-3xl font-extrabold mb-4 pb-2">Seller Dashboard</h1>
-                <p className="text-theme-dark/70 text-lg mb-6 max-w-md">Log in to track your food listings, manage pickups, and view insights.</p>
+                <h1 className="text-3xl font-extrabold mb-4 pb-2">{t('seller_dash_login')}</h1>
+                <p className="text-theme-dark/70 text-lg mb-6 max-w-md">{t('seller_login_desc')}</p>
                 <Link to="/login" className="bg-theme-green text-white px-8 py-3 rounded-full font-bold hover:bg-green-800 shadow-md">
                    Log In
                 </Link>
@@ -31,15 +31,15 @@ const SellerDashboard = () => {
     const myItems = items.filter(i => i.user_id === user.id);
     myItems.sort((a,b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-    const totalListed = myItems.reduce((acc, item) => acc + item.totalServings, 0);
-    const totalClaimedParts = myItems.reduce((acc, item) => acc + (item.totalServings - item.availableServings), 0);
-    const foodSavedMeals = totalClaimedParts; 
+    const totalListed = stats.totalListed;
+    const totalClaimedParts = stats.totalClaimed;
+    const foodSavedMeals = stats.totalClaimed; 
 
     // Generate mock mock notifications
     const notifications = myItems
         .filter(i => i.totalServings > i.availableServings && i.availableServings > 0)
         .map(i => `Your food "${i.name}" was partially claimed!`)
-        .concat(myItems.filter(i => i.status === 'claimed' || i.availableServings === 0).map(i => `Your food "${i.name}" was fully claimed!`))
+        .concat(myItems.filter(i => i.status === 'sold_out' || i.availableServings === 0).map(i => `Your food "${i.name}" was fully claimed!`))
         .concat(myItems.filter(i => i.status === 'donated').map(i => `Food "${i.name}" sent to NGO`));
 
     return (
@@ -48,9 +48,9 @@ const SellerDashboard = () => {
                 <div>
                     <h1 className="text-4xl font-extrabold text-theme-dark mb-2 tracking-tight flex items-center gap-3">
                         <Package className="w-10 h-10 text-theme-mint" /> 
-                        Seller Dashboard
+                        {user?.user_metadata?.display_name ? `${user.user_metadata.display_name}${t('s_dashboard')}` : t('my_dashboard')}
                     </h1>
-                    <p className="text-theme-dark/70 text-lg font-medium">Track your surplus food listings, coordinate with buyers, and manage NGO transfers.</p>
+                    <p className="text-theme-dark/70 text-lg font-medium">{t('track_surplus')}</p>
                 </div>
                 <Link to="/list" className="bg-theme-green text-white px-6 py-3 rounded-full font-bold hover:bg-green-800 shadow-md whitespace-nowrap transition-transform hover:scale-105">
                     + List More Food
@@ -64,7 +64,7 @@ const SellerDashboard = () => {
                         <Package className="w-8 h-8" />
                     </div>
                     <div>
-                        <div className="text-sm font-bold text-theme-dark/60">Total Food Listed</div>
+                        <div className="text-sm font-bold text-theme-dark/60">{t('total_listed')}</div>
                         <div className="text-3xl font-black text-theme-dark">{totalListed} pt</div>
                     </div>
                 </div>
@@ -73,7 +73,7 @@ const SellerDashboard = () => {
                         <CheckCircle className="w-8 h-8" />
                     </div>
                     <div>
-                        <div className="text-sm font-bold text-theme-dark/60">Total Claimed</div>
+                        <div className="text-sm font-bold text-theme-dark/60">{t('total_claimed')}</div>
                         <div className="text-3xl font-black text-theme-dark">{totalClaimedParts} pt</div>
                     </div>
                 </div>
@@ -82,7 +82,7 @@ const SellerDashboard = () => {
                         <Leaf className="w-8 h-8" />
                     </div>
                     <div>
-                        <div className="text-sm font-bold text-theme-mint mix-blend-multiply">Food Saved (Meals)</div>
+                        <div className="text-sm font-bold text-theme-mint mix-blend-multiply">{t('food_saved')}</div>
                         <div className="text-3xl font-black text-theme-mint mix-blend-multiply">{foodSavedMeals}</div>
                     </div>
                 </div>
@@ -92,7 +92,7 @@ const SellerDashboard = () => {
             {notifications.length > 0 && (
                 <div className="bg-white rounded-2xl p-6 mb-10 shadow-sm border border-gray-100">
                     <h3 className="font-bold text-lg mb-4 flex items-center gap-2 text-theme-dark">
-                        <AlertCircle className="w-5 h-5 text-orange-400" /> Notifications
+                        <AlertCircle className="w-5 h-5 text-orange-400" /> {t('notifications')}
                     </h3>
                     <div className="flex flex-col gap-3">
                         {notifications.slice(0, 3).map((notif, idx) => (
@@ -107,17 +107,17 @@ const SellerDashboard = () => {
             {myItems.length === 0 ? (
                 <div className="text-center py-24 bg-theme-cream/40 rounded-[32px] border border-theme-creamDark shadow-sm px-4">
                    <div className="text-6xl mb-4 opacity-50">🍽️</div>
-                   <p className="text-theme-dark/60 mb-6 text-lg font-bold">You haven't listed any surplus food yet.</p>
+                   <p className="text-theme-dark/60 mb-6 text-lg font-bold">{t('no_food_listed')}</p>
                    <Link to="/list" className="bg-theme-green text-white px-8 py-3 rounded-full font-bold hover:bg-green-800 shadow-md">
                      Create Your First Listing
                    </Link>
                 </div>
             ) : (
                 <div className="space-y-6">
-                    <h2 className="text-2xl font-bold text-theme-dark mb-4">Your Listings Status</h2>
+                    <h2 className="text-2xl font-bold text-theme-dark mb-4">{t('listings_status')}</h2>
                     {myItems.map(item => {
                         const claimedQty = item.totalServings - item.availableServings;
-                        const isFullyClaimed = item.availableServings === 0 || item.status === 'claimed';
+                        const isFullyClaimed = item.availableServings === 0 || item.status === 'sold_out';
                         const isDonated = item.status === 'donated';
                         const isPartial = claimedQty > 0 && !isFullyClaimed;
                         
@@ -146,11 +146,20 @@ const SellerDashboard = () => {
                                 <div className="flex flex-col lg:flex-row justify-between gap-6">
                                     {/* Left Info */}
                                     <div className="flex-1">
-                                        <div className="flex items-center gap-3 mb-2">
-                                            <h3 className="text-xl font-bold text-gray-900">{item.name}</h3>
-                                            <span className={`px-3 py-1 text-xs font-bold rounded-full border ${statusColor}`}>
-                                                {statusText}
-                                            </span>
+                                         <div className="flex items-center justify-between gap-3 mb-2">
+                                            <div className="flex items-center gap-3">
+                                                <h3 className="text-xl font-bold text-gray-900">{item.name}</h3>
+                                                <span className={`px-3 py-1 text-xs font-bold rounded-full border ${statusColor}`}>
+                                                    {statusText}
+                                                </span>
+                                            </div>
+                                            <button 
+                                                onClick={() => { if(window.confirm('Are you sure you want to delete this listing?')) deleteItem(item.id) }}
+                                                className="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                                                title="Delete Listing"
+                                            >
+                                                <Trash2 className="w-5 h-5" />
+                                            </button>
                                         </div>
                                         <div className="text-gray-500 font-medium mb-4 flex items-center gap-2">
                                             <MapPin className="w-4 h-4" /> {item.location}

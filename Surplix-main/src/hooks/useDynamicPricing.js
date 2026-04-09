@@ -14,6 +14,12 @@ export const useDynamicPricing = () => {
     localStorage.setItem('surplix_claims', JSON.stringify(activeClaims));
   }, [activeClaims]);
 
+  const [stats, setStats] = useState({
+    totalListed: 0,
+    totalClaimed: 0,
+    mealsDistributed: 0
+  });
+
   // Fetch initial data
   const fetchItems = async () => {
     try {
@@ -26,15 +32,44 @@ export const useDynamicPricing = () => {
         return;
       }
       if (data) {
-        setItems(data.map(item => calculatePrice(item)));
+        setItems(data.filter(item => item.status !== 'deleted').map(item => calculatePrice(item)));
       }
     } catch (err) {
       console.error(err);
     }
   };
 
+  const fetchStats = async () => {
+    if (!user) return;
+    try {
+      // 1. Get statistics for the current user (Seller context)
+      const { data: foodItems } = await supabase.from('food_items').select('total_servings, available_servings').eq('user_id', user.id);
+      const { data: soldItems } = await supabase.from('sold_items').select('total_servings').eq('user_id', user.id);
+
+      const activeListed = foodItems?.reduce((acc, i) => acc + i.total_servings, 0) || 0;
+      const historyListed = soldItems?.reduce((acc, i) => acc + i.total_servings, 0) || 0;
+      const activeClaimed = foodItems?.reduce((acc, i) => acc + (i.total_servings - i.available_servings), 0) || 0;
+      
+      const userTotalListed = activeListed + historyListed;
+      const userTotalClaimed = activeClaimed + historyListed;
+
+      // 2. Get global statistics for NGO context (Meals distributed by all NGOs)
+      const { data: globalSold } = await supabase.from('sold_items').select('total_servings').eq('status', 'donated');
+      const totalDonated = globalSold?.reduce((acc, i) => acc + i.total_servings, 0) || 0;
+
+      setStats({
+        totalListed: userTotalListed,
+        totalClaimed: userTotalClaimed,
+        mealsDistributed: 1240 + totalDonated // Base mock value + real DB data
+      });
+    } catch (err) {
+      console.log("Stats fetch error:", err);
+    }
+  };
+
   useEffect(() => {
     fetchItems();
+    fetchStats();
 
     // Set up real-time subscription for live updates across devices
     const subscription = supabase
@@ -49,9 +84,12 @@ export const useDynamicPricing = () => {
           });
         }
         if (payload.eventType === 'UPDATE') {
-          setItems(prevItems => prevItems.map(item => 
-            item.id === payload.new.id ? calculatePrice(payload.new) : item
-          ));
+          if (payload.new.status === 'deleted') {
+             setItems(prevItems => prevItems.filter(item => item.id !== payload.new.id));
+          } else {
+             setItems(prevItems => prevItems.map(item => item.id === payload.new.id ? calculatePrice(payload.new) : item));
+          }
+          fetchStats();
         }
         if (payload.eventType === 'DELETE') {
           setItems(prevItems => prevItems.filter(item => item.id === payload.old.id));
@@ -156,10 +194,10 @@ export const useDynamicPricing = () => {
     }
 
     const itemToUpdate = items.find(item => item.id === id);
-    if (!itemToUpdate || itemToUpdate.status === 'claimed' || itemToUpdate.status === 'donated' || itemToUpdate.available_servings < claimQty) return null;
+    if (!itemToUpdate || itemToUpdate.status === 'sold_out' || itemToUpdate.status === 'donated' || itemToUpdate.available_servings < claimQty) return null;
 
     const newAvailable = itemToUpdate.available_servings - claimQty;
-    const newStatus = newAvailable === 0 ? 'claimed' : 'available';
+    const newStatus = newAvailable === 0 ? 'sold_out' : 'available';
     const newInterested = itemToUpdate.interested + 1;
 
     const claimDetails = {
@@ -198,6 +236,7 @@ export const useDynamicPricing = () => {
         status: newStatus,
         interested: newInterested
       }).eq('id', id);
+      fetchStats();
     } catch (err) {
       console.log(err);
       fetchItems(); // revert optimistic update
@@ -214,13 +253,15 @@ export const useDynamicPricing = () => {
      setItems(prev => prev.map(item => item.id === id ? { ...item, status: 'ngo_locked' } : item));
      try {
        await supabase.from('food_items').update({ status: 'ngo_locked' }).eq('id', id);
+       fetchStats();
      } catch (err) { console.log(err); fetchItems(); }
   };
 
   const pickupItem = async (id) => {
-     setItems(prev => prev.map(item => item.id === id ? { ...item, status: 'picked_up', available_servings: 0 } : item));
+     setItems(prev => prev.map(item => item.id === id ? { ...item, status: 'sold_out', availableServings: 0, available_servings: 0 } : item));
      try {
-       await supabase.from('food_items').update({ status: 'picked_up', available_servings: 0 }).eq('id', id);
+       await supabase.from('food_items').update({ status: 'sold_out', available_servings: 0 }).eq('id', id);
+       fetchStats();
      } catch (err) { console.log(err); fetchItems(); }
   };
 
@@ -229,6 +270,7 @@ export const useDynamicPricing = () => {
      setItems(prev => prev.map(item => item.id === id ? { ...item, status: statusToRevert } : item));
      try {
        await supabase.from('food_items').update({ status: statusToRevert }).eq('id', id);
+       fetchStats();
      } catch (err) { console.log(err); fetchItems(); }
   };
 
@@ -280,6 +322,7 @@ export const useDynamicPricing = () => {
           }
         }
         setItems(prev => [...prev, calculatePrice(data)]);
+        fetchStats();
       }
     } catch (err) {
       console.log(err);
@@ -301,5 +344,17 @@ export const useDynamicPricing = () => {
     imageUrl: item.image_url || localStorage.getItem(`food_image_${item.id}`) || null
   }));
 
-  return { items: normalizedItems, handleInteract, handleClaim, addItem, activeClaims, markClaimCollected, lockItem, pickupItem, unlockItem };
+  const deleteItem = async (id) => {
+    setItems(prev => prev.filter(item => item.id !== id));
+    try {
+      // Using update to bypass lack of DELETE policy in RLS
+      await supabase.from('food_items').update({ status: 'deleted', available_servings: 0 }).eq('id', id);
+      fetchStats();
+    } catch (err) {
+      console.log(err);
+      fetchItems();
+    }
+  };
+
+  return { items: normalizedItems, stats, handleInteract, handleClaim, addItem, deleteItem, activeClaims, markClaimCollected, lockItem, pickupItem, unlockItem };
 };

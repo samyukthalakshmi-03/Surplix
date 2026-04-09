@@ -21,6 +21,9 @@ const Login = () => {
   // Org Specific
   const [orgType, setOrgType] = useState('NGO'); // NGO, Shelter, Charity
   const [contactPerson, setContactPerson] = useState('');
+  const [regNumber, setRegNumber] = useState('');
+  const [website, setWebsite] = useState('');
+
   
   // Location
   const [locationObj, setLocationObj] = useState(null);
@@ -108,6 +111,8 @@ const Login = () => {
             metadata.org_type = orgType;
             metadata.contact_person = contactPerson;
             metadata.org_name = name;
+            metadata.registration_number = regNumber;
+            metadata.website = website;
         }
 
         const { data, error } = await signUp(email, password, metadata);
@@ -162,40 +167,38 @@ const Login = () => {
       <div className={`bg-white rounded-[32px] p-8 md:p-10 shadow-sm border border-theme-creamDark w-full ${!isLogin && role === 'organization' ? 'max-w-2xl' : 'max-w-md'} transform transition-all`}>
         <div className="text-center mb-8">
           <h1 className="text-3xl font-extrabold text-theme-green mb-2 tracking-tight">
-            {isLogin ? (t('login_welcome') || 'Welcome Back!') : 'Create an Account'}
+            {isLogin ? (t('login_welcome') || 'Welcome Back!') : t('create_account')}
           </h1>
           <p className="text-theme-dark/70 font-medium">
-            {isLogin ? (t('login_desc') || 'Login to continue reducing food waste') : 'Sign up to start making an impact'}
+            {isLogin ? (t('login_desc') || 'Login to continue reducing food waste') : t('signup_desc')}
           </p>
         </div>
 
-        {!isLogin && (
-            <div className="flex gap-4 mb-8">
-                <button 
-                  type="button" 
-                  onClick={() => setRole('user')}
-                  className={`flex-1 py-4 px-2 rounded-2xl border-2 flex flex-col items-center justify-center gap-2 transition-all ${role === 'user' ? 'border-theme-green bg-theme-mint/20 text-theme-green' : 'border-theme-creamDark bg-theme-cream/30 text-theme-dark/50 hover:border-theme-green/50'}`}
-                >
-                    <User className="w-6 h-6" />
-                    <span className="font-bold text-sm">User</span>
-                </button>
-                <button 
-                  type="button" 
-                  onClick={() => setRole('organization')}
-                  className={`flex-1 py-4 px-2 rounded-2xl border-2 flex flex-col items-center justify-center gap-2 transition-all ${role === 'organization' ? 'border-theme-orange bg-theme-yellow/20 text-theme-orange' : 'border-theme-creamDark bg-theme-cream/30 text-theme-dark/50 hover:border-theme-orange/50'}`}
-                >
-                    <Building2 className="w-6 h-6" />
-                    <span className="font-bold text-sm">Organization</span>
-                </button>
-            </div>
-        )}
+        <div className="flex gap-4 mb-8">
+            <button 
+              type="button" 
+              onClick={() => { setRole('user'); setError(null); }}
+              className={`flex-1 py-4 px-2 rounded-2xl border-2 flex flex-col items-center justify-center gap-2 transition-all ${role === 'user' ? 'border-theme-green bg-theme-mint/20 text-theme-green' : 'border-theme-creamDark bg-theme-cream/30 text-theme-dark/50 hover:border-theme-green/50'}`}
+            >
+                <User className="w-6 h-6" />
+                <span className="font-bold text-sm">{t('user_role')}</span>
+            </button>
+            <button 
+              type="button" 
+              onClick={() => { setRole('organization'); setError(null); }}
+              className={`flex-1 py-4 px-2 rounded-2xl border-2 flex flex-col items-center justify-center gap-2 transition-all ${role === 'organization' ? 'border-theme-orange bg-theme-yellow/20 text-theme-orange' : 'border-theme-creamDark bg-theme-cream/30 text-theme-dark/50 hover:border-theme-orange/50'}`}
+            >
+                <Building2 className="w-6 h-6" />
+                <span className="font-bold text-sm">{t('org_role')}</span>
+            </button>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {!isLogin ? (
             <div className={`grid ${role === 'organization' ? 'grid-cols-1 md:grid-cols-2 gap-6' : 'grid-cols-1 gap-6'}`}>
               <div className="space-y-6">
                   <div>
-                    <label className="block text-sm font-bold text-theme-dark mb-2">{role === 'organization' ? 'Organization Name' : 'Full Name'}</label>
+                    <label className="block text-sm font-bold text-theme-dark mb-2">{role === 'organization' ? t('org_name') : t('full_name')}</label>
                     <input 
                       type="text" required
                       placeholder={role === 'organization' ? "e.g. Hope Foundation" : "e.g. Rahul Sharma"}
@@ -206,7 +209,7 @@ const Login = () => {
                   {role === 'organization' && (
                      <>
                         <div>
-                            <label className="block text-sm font-bold text-theme-dark mb-2">Organization Type</label>
+                            <label className="block text-sm font-bold text-theme-dark mb-2">{t('org_type')}</label>
                             <select 
                                 className="w-full px-4 py-3 rounded-2xl border border-theme-creamDark focus:ring-2 focus:ring-theme-green outline-none bg-theme-cream/30 text-theme-dark transition-colors"
                                 value={orgType} onChange={(e) => setOrgType(e.target.value)}
@@ -218,7 +221,7 @@ const Login = () => {
                             </select>
                         </div>
                         <div>
-                            <label className="block text-sm font-bold text-theme-dark mb-2">Contact Person Name</label>
+                            <label className="block text-sm font-bold text-theme-dark mb-2">{t('contact_person')}</label>
                             <input 
                               type="text" required
                               placeholder="e.g. Sarah Connor"
@@ -226,10 +229,28 @@ const Login = () => {
                               value={contactPerson} onChange={(e) => setContactPerson(e.target.value)}
                             />
                         </div>
+                        <div>
+                            <label className="block text-sm font-bold text-theme-dark mb-2">{t('reg_number')}</label>
+                            <input 
+                              type="text" required
+                              placeholder="e.g. NGO-12345"
+                              className="w-full px-4 py-3 rounded-2xl border border-theme-creamDark focus:ring-2 focus:ring-theme-green outline-none bg-theme-cream/30 text-theme-dark placeholder-theme-dark/40 transition-colors"
+                              value={regNumber} onChange={(e) => setRegNumber(e.target.value)}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-bold text-theme-dark mb-2">{t('website_url')}</label>
+                            <input 
+                              type="url"
+                              placeholder="https://example.org"
+                              className="w-full px-4 py-3 rounded-2xl border border-theme-creamDark focus:ring-2 focus:ring-theme-green outline-none bg-theme-cream/30 text-theme-dark placeholder-theme-dark/40 transition-colors"
+                              value={website} onChange={(e) => setWebsite(e.target.value)}
+                            />
+                        </div>
                      </>
                   )}
                   <div>
-                    <label className="block text-sm font-bold text-theme-dark mb-2">{role === 'organization' ? 'Official Email' : 'Email Address'}</label>
+                    <label className="block text-sm font-bold text-theme-dark mb-2">{role === 'organization' ? t('official_email') : (t('login_email') || 'Email Address')}</label>
                     <input 
                       type="email" required
                       placeholder="you@email.com"
@@ -241,7 +262,7 @@ const Login = () => {
 
               <div className="space-y-6">
                   <div>
-                    <label className="block text-sm font-bold text-theme-dark mb-2">Password</label>
+                    <label className="block text-sm font-bold text-theme-dark mb-2">{t('login_password') || 'Password'}</label>
                     <input 
                       type="password" required
                       placeholder="••••••••"
@@ -251,7 +272,7 @@ const Login = () => {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-bold text-theme-dark mb-2">Phone Number {role === 'user' && '(Optional)'}</label>
+                    <label className="block text-sm font-bold text-theme-dark mb-2">{t('phone_number')} {role === 'user' && '(Optional)'}</label>
                     <input 
                       type="tel" required={role === 'organization'}
                       placeholder="+91 9876543210"
@@ -262,7 +283,7 @@ const Login = () => {
 
                   <div className="bg-theme-cream/20 p-4 rounded-2xl border border-theme-creamDark">
                      <label className="block text-sm font-bold text-theme-dark mb-2 flex items-center gap-2">
-                         <MapPin className="w-4 h-4 text-theme-mint" /> Location
+                         <MapPin className="w-4 h-4 text-theme-mint" /> {t('location_label_login')}
                      </label>
                      {!locationObj && !locDisabled ? (
                          <button
@@ -270,13 +291,13 @@ const Login = () => {
                             onClick={detectLocation}
                             className="w-full bg-white border border-theme-creamDark text-theme-dark/70 font-bold px-4 py-3 rounded-[20px] hover:border-theme-green hover:text-theme-green flex justify-center items-center gap-2 transition-colors"
                          >
-                            {locating ? <><Loader2 className="w-5 h-5 animate-spin" /> Detecting...</> : 'Auto-Detect Location'}
+                            {locating ? <><Loader2 className="w-5 h-5 animate-spin" /> {t('detecting')}</> : t('auto_detect')}
                          </button>
                      ) : (
                          <div>
                              <input 
                                 type="text" required
-                                placeholder="Enter address manually"
+                                placeholder={t('enter_address')}
                                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-theme-mint outline-none text-sm"
                                 value={manualAddress}
                                 onChange={(e) => {
@@ -293,7 +314,7 @@ const Login = () => {
           ) : (
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-bold text-theme-dark mb-2">Email Address</label>
+                <label className="block text-sm font-bold text-theme-dark mb-2">{t('login_email') || 'Email Address'}</label>
                 <input 
                   type="email" required
                   placeholder="you@email.com"
@@ -302,7 +323,7 @@ const Login = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-bold text-theme-dark mb-2">Password</label>
+                <label className="block text-sm font-bold text-theme-dark mb-2">{t('login_password') || 'Password'}</label>
                 <input 
                   type="password" required
                   placeholder="••••••••"
@@ -324,12 +345,12 @@ const Login = () => {
             disabled={loading}
             className="w-full bg-theme-green text-white font-bold text-lg py-4 rounded-[20px] hover:bg-green-800 hover:-translate-y-1 hover:shadow-xl transition-all disabled:opacity-50 disabled:hover:translate-y-0"
           >
-            {loading ? 'Processing...' : (isLogin ? (t('login_button') || 'Login') : 'Create Account')}
+            {loading ? t('processing') : (isLogin ? (t('login_button') || 'Login') : t('signup_btn'))}
           </button>
         </form>
 
         <div className="mt-6 text-center text-sm font-medium text-theme-dark/70">
-          {isLogin ? "Don't have an account? " : "Already have an account? "}
+          {isLogin ? t('dont_have') : t('already_have')}
           <button 
             type="button"
             className="text-theme-green hover:underline font-bold"
@@ -338,7 +359,7 @@ const Login = () => {
                 setError(null);
             }}
           >
-            {isLogin ? 'Sign Up' : 'Login'}
+            {isLogin ? t('sign_up_action') : t('login_action')}
           </button>
         </div>
       </div>

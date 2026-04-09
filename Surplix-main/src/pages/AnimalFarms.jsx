@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
+import { Trash2 } from 'lucide-react';
 
 const INITIAL_FARMS_DATA = [
-  { id: 101, name: "MUTTA KOZHI FARMS", location: "Registered NGO Location", types: "Donations / Scraps", contact: "+91 9876543210 (Demo Contact)", desc: "A registered NGO organization on our platform ready to distribute or recycle received food." },
   { id: 1, name: "Green Pastures Pig Farm", location: "Rural Karnataka, 45km away", types: "Pigs", contact: "+91 9876543201", desc: "Accepts vegetable peels and safe cooked leftovers." },
   { id: 2, name: "Happy Herd Dairy", location: "Nelamangala Highway", types: "Cows & Buffaloes", contact: "+91 9876543202", desc: "Looking for fresh produce scraps (no meat)." },
   { id: 3, name: "Cluckington Poultry", location: "East Bangalore Outskirts", types: "Chickens", contact: "+91 9876543203", desc: "Accepts grain, rice, and bread waste." },
@@ -20,9 +20,31 @@ const AnimalFarms = () => {
         }
     }, []);
 
+    const deleteFarm = (id) => {
+        if (!window.confirm('Are you sure you want to remove this organization?')) return;
+        setFarmsData(prev => prev.filter(f => f.id !== id));
+        const registeredFarms = JSON.parse(localStorage.getItem('surplix_registered_farms') || '[]');
+        localStorage.setItem('surplix_registered_farms', JSON.stringify(registeredFarms.filter(f => f.id !== id)));
+    };
+
     return (
         <div className="pt-24 max-w-7xl mx-auto px-4 pb-12 min-h-screen bg-theme-cream font-sans">
-            <h1 className="text-4xl font-extrabold text-theme-dark mb-2 tracking-tight">Agricultural Recycling & NGOs 🚜</h1>
+            <div className="flex justify-between items-start mb-2">
+                <h1 className="text-4xl font-extrabold text-theme-dark tracking-tight">Agricultural Recycling & NGOs 🚜</h1>
+                {farmsData.length > INITIAL_FARMS_DATA.length && (
+                    <button 
+                        onClick={() => {
+                            if(window.confirm('Clear all entries?')) {
+                                localStorage.removeItem('surplix_registered_farms');
+                                setFarmsData(INITIAL_FARMS_DATA);
+                            }
+                        }}
+                        className="bg-red-50 text-red-600 px-4 py-2 rounded-xl text-xs font-bold border border-red-100 hover:bg-red-600 hover:text-white transition-all"
+                    >
+                        Clear All
+                    </button>
+                )}
+            </div>
             <p className="text-theme-dark/70 text-lg font-medium mb-10 max-w-3xl">
                 Has your food gone bad? Don't throw it in the landfill! Local animal farms, composting centers, and NGOs happily take spoiled veggies and leftovers to safely feed animals or create fertilizer.
             </p>
@@ -30,8 +52,18 @@ const AnimalFarms = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {farmsData.map(farm => (
                     <div key={farm.id} className="bg-white rounded-[32px] p-6 shadow-sm border border-theme-creamDark hover:-translate-y-1 transition-transform">
-                        <div className="bg-orange-100 text-orange-800 text-xs font-extrabold inline-block px-3 py-1.5 rounded-full mb-4 border border-orange-200 shadow-sm uppercase tracking-wider">
-                           Accepts {farm.types} Feed
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="bg-orange-100 text-orange-800 text-xs font-extrabold inline-block px-3 py-1.5 rounded-full border border-orange-200 shadow-sm uppercase tracking-wider">
+                                Accepts {farm.types} Feed
+                            </div>
+                            {farm.id > 100 && (
+                                <button 
+                                    onClick={() => deleteFarm(farm.id)}
+                                    className="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </button>
+                            )}
                         </div>
                         <h3 className="text-2xl font-bold text-theme-dark mb-1">{farm.name}</h3>
                         <p className="text-theme-dark/60 font-medium text-sm mb-4">📍 {farm.location}</p>

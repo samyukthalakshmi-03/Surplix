@@ -1,8 +1,12 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 
 const Footer = () => {
   const { t } = useLanguage();
+  const location = useLocation();
+
+  if (location.pathname === '/login') return null;
 
   return (
     <footer className="relative bg-gradient-to-br from-[#5C3A21] to-[#3D2616] text-theme-cream pt-16 pb-8 border-t-[6px] border-theme-yellow mt-auto overflow-hidden">

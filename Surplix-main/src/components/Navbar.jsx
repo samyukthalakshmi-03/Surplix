@@ -1,13 +1,21 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { lang, setLang, t } = useLanguage();
   const { user, signOut } = useAuth();
   const isActive = (path) => location.pathname === path ? "text-theme-green font-bold" : "text-theme-dark/70 hover:text-theme-green";
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/login');
+  };
+
+  if (location.pathname === '/login') return null;
 
   return (
     <>
@@ -26,9 +34,9 @@ const Navbar = () => {
               <div className="hidden xl:flex space-x-6 lg:space-x-8 items-center font-medium text-sm lg:text-base whitespace-nowrap">
                 <Link to="/" className={isActive('/')}>{t('home')}</Link>
                 {user?.user_metadata?.role === 'organization' ? (
-                    <Link to="/ngo-dashboard" className={isActive('/ngo-dashboard')}>Dashboard</Link>
+                    <Link to="/ngo-dashboard" className={isActive('/ngo-dashboard')}>{t('nav_dashboard')}</Link>
                 ) : (
-                    <Link to="/seller-dashboard" className={isActive('/seller-dashboard')}>Dashboard</Link>
+                    <Link to="/seller-dashboard" className={isActive('/seller-dashboard')}>{t('nav_dashboard')}</Link>
                 )}
                 <Link to="/browse" className={isActive('/browse')}>{t('browse')}</Link>
                 <Link to="/about" className={isActive('/about')}>{t('about')}</Link>
@@ -53,7 +61,7 @@ const Navbar = () => {
                   <span className="truncate max-w-[120px] 2xl:max-w-[200px]" title={user.user_metadata?.display_name || user.email}>
                       {user.user_metadata?.display_name || user.email?.split('@')[0]}
                   </span>
-                  <button onClick={signOut} className="hover:text-theme-orange transition-colors">Logout</button>
+                  <button onClick={handleLogout} className="hover:text-theme-orange transition-colors">{t('logout')}</button>
                 </div>
               ) : (
                 <Link to="/login" className="text-theme-dark/70 font-bold hover:text-theme-green transition-colors hidden lg:block whitespace-nowrap">{t('login')}</Link>

@@ -7,7 +7,7 @@ import { getDistance } from '../utils/geo';
 import { useAuth } from '../context/AuthContext';
 
 const BrowseFood = () => {
-  const { items, handleInteract, handleClaim, activeClaims, markClaimCollected } = usePricing();
+  const { items, handleInteract, handleClaim, activeClaims, markClaimCollected, deleteItem } = usePricing();
   const { t } = useLanguage();
   const { user } = useAuth();
   const [userLocation, setUserLocation] = useState(null);
@@ -121,6 +121,12 @@ const BrowseFood = () => {
                        <span className="text-theme-green">{order.totalServings - order.availableServings}x</span> {order.name}
                     </p>
                     <p className="text-sm text-theme-dark/60 font-medium">📍 {order.location}</p>
+                    <button 
+                      onClick={() => deleteItem(order.id)}
+                      className="mt-3 w-full bg-theme-green/10 text-theme-green text-xs font-bold py-2 rounded-xl hover:bg-theme-green hover:text-white transition-all"
+                    >
+                       Done • Clear
+                    </button>
                 </div>
                 )
              })}

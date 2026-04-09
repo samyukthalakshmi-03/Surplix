@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 import FoodCard from '../components/FoodCard';
 
 const NGODashboard = () => {
-    const { items, handleClaim, lockItem, pickupItem, unlockItem } = usePricing();
+    const { items, handleClaim, lockItem, pickupItem, unlockItem, stats } = usePricing();
     const { user } = useAuth();
     const { t } = useLanguage();
 
@@ -18,8 +18,8 @@ const NGODashboard = () => {
     if (!user || user.user_metadata?.role !== 'organization') {
         return (
             <div className="pt-32 text-center h-screen bg-theme-cream px-4">
-                <h1 className="text-3xl font-extrabold mb-4 pb-2">Organization Access Required</h1>
-                <p className="text-theme-dark/70 text-lg mb-6 max-w-md mx-auto">This dashboard is reserved for registered NGOs and charities.</p>
+                <h1 className="text-3xl font-extrabold mb-4 pb-2">{t('org_access_req')}</h1>
+                <p className="text-theme-dark/70 text-lg mb-6 max-w-md mx-auto">{t('org_access_desc')}</p>
                 <Link to="/" className="bg-theme-green text-white px-8 py-3 rounded-full font-bold hover:bg-green-800 shadow-md">
                     Return Home
                 </Link>
@@ -62,9 +62,9 @@ const NGODashboard = () => {
                 <div>
                     <h1 className="text-2xl font-extrabold text-theme-dark mb-1 tracking-tight flex items-center gap-2">
                         <Building2 className="w-6 h-6 text-theme-green" />
-                        {orgName} Dashboard
+                        {orgName}{t('s_dashboard')}
                     </h1>
-                    <p className="text-theme-dark/70 text-sm font-medium">Manage incoming donations and distribute meals.</p>
+                    <p className="text-theme-dark/70 text-sm font-medium">{t('manage_incoming')}</p>
                 </div>
 
                 <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-theme-creamDark shadow-sm">
@@ -74,7 +74,7 @@ const NGODashboard = () => {
                     >
                         <div className={`w-3 h-3 rounded-full bg-white transition-transform ${autoAccept ? 'translate-x-5' : 'translate-x-0'}`}></div>
                     </button>
-                    <span className="font-bold text-xs text-theme-dark">Auto-Accept</span>
+                    <span className="font-bold text-xs text-theme-dark">{t('auto_accept')}</span>
                 </div>
             </div>
 
@@ -84,8 +84,8 @@ const NGODashboard = () => {
                         <Heart className="w-6 h-6" />
                     </div>
                     <div>
-                        <div className="text-xs font-bold text-theme-dark/60 tracking-wider uppercase">Meals Distributed</div>
-                        <div className="text-xl font-black text-theme-dark">1,240 pt</div>
+                        <div className="text-xs font-bold text-theme-dark/60 tracking-wider uppercase">{t('meals_distributed')}</div>
+                        <div className="text-xl font-black text-theme-dark">{stats.mealsDistributed} pt</div>
                     </div>
                 </div>
                 <div className="bg-white p-4 rounded-2xl border border-theme-creamDark shadow-sm flex items-center gap-3 hover:-translate-y-1 transition-transform">
@@ -93,7 +93,7 @@ const NGODashboard = () => {
                         <CheckCircle className="w-6 h-6" />
                     </div>
                     <div>
-                        <div className="text-xs font-bold text-theme-dark/60 tracking-wider uppercase">Active Pickups</div>
+                        <div className="text-xs font-bold text-theme-dark/60 tracking-wider uppercase">{t('active_pickups')}</div>
                         <div className="text-xl font-black text-theme-dark">{incomingDonations.length}</div>
                     </div>
                 </div>
@@ -102,7 +102,7 @@ const NGODashboard = () => {
                         <Clock className="w-6 h-6" />
                     </div>
                     <div>
-                        <div className="text-xs font-bold text-theme-dark/60 tracking-wider uppercase">Pending Approvals</div>
+                        <div className="text-xs font-bold text-theme-dark/60 tracking-wider uppercase">{t('pending_approvals')}</div>
                         <div className="text-xl font-black text-theme-dark">{nearingDonations.length}</div>
                     </div>
                 </div>
@@ -111,10 +111,10 @@ const NGODashboard = () => {
             <div className="space-y-8">
                 {/* 1. Priority Donations */}
                 <div>
-                    <h2 className="text-2xl font-bold text-theme-dark mb-4 border-b-2 border-theme-green pb-2 inline-block">🚀 Priority Overstock (Ready for Pickup)</h2>
+                    <h2 className="text-2xl font-bold text-theme-dark mb-4 border-b-2 border-theme-green pb-2 inline-block">🚀 {t('priority_overstock')}</h2>
                     {incomingDonations.length === 0 ? (
                         <div className="bg-theme-cream/40 p-8 rounded-[32px] text-center border border-theme-creamDark text-theme-dark/60 font-bold">
-                            No immediate donations available waiting for pickup right now.
+                            {t('no_immediate_donations')}
                         </div>
                     ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -128,9 +128,9 @@ const NGODashboard = () => {
                                             onClick={() => onAcceptDonation(item)}
                                             className="w-full bg-theme-green text-white font-bold py-3.5 rounded-[20px] transition-all hover:-translate-y-1 hover:shadow-lg flex items-center justify-center gap-2"
                                         >
-                                            <Package className="w-5 h-5" /> Accept & Pickup
+                                            <Package className="w-5 h-5" /> {t('accept_pickup')}
                                         </button>
-                                        <p className="text-xs text-theme-dark/60 text-center font-bold">Driver will be matched.</p>
+                                        <p className="text-xs text-theme-dark/60 text-center font-bold">{t('driver_matched')}</p>
                                     </div>
                                 }
                             />
@@ -141,12 +141,12 @@ const NGODashboard = () => {
 
             {/* 2. Upcoming Donations */}
             <div>
-                <h2 className="text-2xl font-bold text-theme-dark mb-4 border-b-2 border-theme-orange pb-2 inline-block">⏳ Approaching Surplus</h2>
-                <p className="text-theme-dark/60 font-bold mb-4">These items are nearing their expiry or their price drop limit is extremely low. You get priority access.</p>
+                <h2 className="text-2xl font-bold text-theme-dark mb-4 border-b-2 border-theme-orange pb-2 inline-block">⏳ {t('approaching_surplus')}</h2>
+                <p className="text-theme-dark/60 font-bold mb-4">{t('nearing_expiry')}</p>
 
                 {nearingDonations.length === 0 ? (
                     <div className="bg-theme-cream/40 p-8 rounded-[32px] text-center border border-theme-creamDark text-theme-dark/60 font-bold">
-                        No approaching surplus currently in your vicinity.
+                        {t('no_approaching_surplus')}
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -158,14 +158,14 @@ const NGODashboard = () => {
                                     <div className="space-y-2 mt-4">
                                         <button
                                             onClick={() => {
-                                                alert("You have claimed this approaching surplus! This ensures members can no longer buy it.");
+                                                alert(t('prevent_buy'));
                                                 handleClaim(item.id, item.availableServings);
                                             }}
                                             className="w-full bg-orange-50 border-2 border-theme-orange text-theme-orange font-bold py-3.5 rounded-[20px] transition-all hover:bg-orange-100 flex items-center justify-center gap-2"
                                         >
-                                            <Clock className="w-5 h-5" /> Pre-Claim Donation
+                                            <Clock className="w-5 h-5" /> {t('pre_claim')}
                                         </button>
-                                        <p className="text-xs text-theme-orange/70 text-center font-bold">Prevent going to zero</p>
+                                        <p className="text-xs text-theme-orange/70 text-center font-bold">{t('prevent_zero')}</p>
                                     </div>
                                 }
                             />

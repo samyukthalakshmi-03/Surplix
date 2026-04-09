@@ -7,7 +7,7 @@ import FoodDetails from '../components/FoodDetails';
 import { Link } from 'react-router-dom';
 
 const MyListings = () => {
-    const { items, handleInteract, handleClaim } = usePricing();
+    const { items, stats, handleInteract, handleClaim } = usePricing();
     const { user } = useAuth();
     const { t } = useLanguage();
     const [selectedItemId, setSelectedItemId] = useState(null);
@@ -28,8 +28,8 @@ const MyListings = () => {
     myItems.sort((a,b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
     // Compute simple stats
-    const totalListed = myItems.length;
-    const totalClaimedParts = myItems.reduce((acc, item) => acc + (item.totalServings - item.availableServings), 0);
+    const totalListed = stats.totalListed;
+    const totalClaimedParts = stats.totalClaimed;
 
     return (
         <div className="pt-24 max-w-7xl mx-auto px-4 pb-12 min-h-screen bg-theme-cream font-sans">

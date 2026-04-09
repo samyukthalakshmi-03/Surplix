@@ -9,9 +9,9 @@ const MOCK_POSTS = [
     user: 'Aarav Sharma',
     avatar: 'https://i.pravatar.cc/150?u=aarav',
     rating: 5,
-    food: 'Masala Dosa & Vada',
-    restaurant: 'Udupi Grand, Jayanagar',
-    content: 'Absolutely loved the surplus meal! The dosa was still surprisingly crisp and the chutney was fresh. Great to see such good food saved from being wasted.',
+    food: 'Homemade Paneer & Rotis',
+    restaurant: 'Sneha (Home Cook)',
+    content: 'I bought food from Sneha and the quantity was really generous! The food is so good in quality and tasted completely fresh. Great to see such amazing meals shared.',
     likes: 24,
     time: '2 hours ago'
   },
@@ -20,9 +20,9 @@ const MOCK_POSTS = [
     user: 'Priya R.',
     avatar: 'https://i.pravatar.cc/150?u=priya',
     rating: 4,
-    food: 'Chicken Biryani',
-    restaurant: 'Meghana Foods, Indiranagar',
-    content: 'Got the end-of-day biryani box using Surplix. Excellent value and the taste was authentic as always. Only giving 4 stars because the raita was missing, but still highly recommended!',
+    food: 'Chicken Biryani Portions',
+    restaurant: 'Rahul V.',
+    content: 'Bought this from Rahul since he had extra from a get-together. The taste was authentic and the portion size was way more than expected. Very happy with the purchase!',
     likes: 15,
     time: '5 hours ago'
   },
@@ -31,9 +31,9 @@ const MOCK_POSTS = [
     user: 'Karthik N.',
     avatar: 'https://i.pravatar.cc/150?u=karthik',
     rating: 5,
-    food: 'Paneer Butter Masala Combo',
-    restaurant: 'Nandhini Deluxe, Kormangala',
-    content: 'Such a generous portion for the ₹80 discounted price. The gravies were delicious and the environmental impact savings made it taste even better!',
+    food: 'Fresh Salad Combo',
+    restaurant: 'Emily Thomas',
+    content: 'Got this from Emily. The quantity was massive and the ingredients were extremely fresh. A perfect way to get a good meal while saving food from going to waste.',
     likes: 42,
     time: '1 day ago'
   }
